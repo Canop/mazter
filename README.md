@@ -14,7 +14,7 @@ A maze in your terminal.
 
 ![screenshot](website/level-9.png)
 
-Go out of the maze, moving with the arrow keys.
+Move with the arrow keys, avoid monsters (or meet them where you want), and go to the exit and the next level.
 
 [Official site, with precompiled binaries and help](https://dystroy.org/mazter)
 

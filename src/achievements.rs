@@ -57,6 +57,10 @@ impl Record {
 }
 
 /// Achievement Database
+///
+/// It's designed to ensure a level you achieved stays achieved
+/// on upgrading mazter unless the level specifications changed
+/// with the upgrade
 pub struct Database {
     file_path: PathBuf,
     records: Vec<Record>,

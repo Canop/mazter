@@ -4,6 +4,8 @@ use {
     std::io,
 };
 
+/// a couple of usize intended as dimensions
+/// (screen, maze, etc.)
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Dim {
     pub w: usize,

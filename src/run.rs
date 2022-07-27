@@ -7,6 +7,7 @@ use {
     std::io::Write,
 };
 
+/// Run the game, assuming the terminal is already in alternate mode
 pub fn run<W: Write>(
     w: &mut W,
     skin: &Skin,

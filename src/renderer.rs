@@ -11,6 +11,7 @@ use {
     },
 };
 
+/// Renders mazes on the set display
 pub struct Renderer<'s> {
     pub skin: &'s Skin,
     pub display: Display,

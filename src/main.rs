@@ -41,6 +41,8 @@ pub use {
 	specs::*,
 };
 
+/// play the game, runing level after level,
+/// in an alternate terminal
 fn play(args: &Args) -> anyhow::Result<()> {
     let skin = Skin::default();
     let mut w = std::io::BufWriter::new(std::io::stderr());
@@ -57,6 +59,7 @@ fn play(args: &Args) -> anyhow::Result<()> {
     r
 }
 
+/// build a maze and print it on stdout
 fn build(args: &Args) -> anyhow::Result<()> {
     let specs = if let Some(level) = args.level {
         let user = &args.user;

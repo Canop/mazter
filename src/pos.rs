@@ -3,6 +3,7 @@ use {
     std::cmp::Ordering,
 };
 
+/// A position
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Pos {
     pub x: usize,

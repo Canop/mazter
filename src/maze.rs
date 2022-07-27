@@ -8,6 +8,8 @@ pub const MIN_JUMP: usize = 2;
 pub const BLAST_RADIUS: usize = 4; // must be greater than MIN_JUMP
 pub const MIN_DIM: usize = 7; // must be greater than BLAST_RADIUS + 2
 
+/// A maze and the state of the game (player
+/// and monster positions, etc.)
 pub struct Maze {
     pub name: String,
     pub dim: Dim,

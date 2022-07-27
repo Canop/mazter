@@ -1,18 +1,15 @@
 use {
     crate::*,
     crokey::key,
-    crossterm::{
-        event::{self, Event},
+    crossterm::event::{
+        self,
+        Event,
     },
     std::io::Write,
 };
 
 /// Run the game, assuming the terminal is already in alternate mode
-pub fn run<W: Write>(
-    w: &mut W,
-    skin: &Skin,
-    args: &Args,
-) -> anyhow::Result<()> {
+pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> {
     let dim = Dim::terminal()?;
     debug!("terminal size: {dim:?}");
     let mut renderer = Renderer {
@@ -24,7 +21,11 @@ pub fn run<W: Write>(
         if Database::can_play(user, level)? {
             level
         } else {
-            anyhow::bail!("User {:?} must win the previous levels before trying level {}", user, level)
+            anyhow::bail!(
+                "User {:?} must win the previous levels before trying level {}",
+                user,
+                level
+            )
         }
     } else {
         Database::first_not_won(user)?
@@ -33,7 +34,7 @@ pub fn run<W: Write>(
         let specs = Specs::for_level(level);
         debug!("maze specs: {:#?}", &specs);
         let mut maze: Maze = time!(specs.into());
-        while !(maze.is_won()||maze.is_lost()) {
+        while !(maze.is_won() || maze.is_lost()) {
             renderer.write(w, &maze)?;
             w.flush()?;
             let e = event::read();

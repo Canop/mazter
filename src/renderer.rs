@@ -2,13 +2,19 @@ use {
     crate::*,
     crossterm::{
         cursor,
-        style::{Colors, Print, ResetColor, SetColors},
+        style::{
+            Colors,
+            Print,
+            ResetColor,
+            SetColors,
+        },
+        terminal::{
+            Clear,
+            ClearType,
+        },
         QueueableCommand,
-        terminal::{Clear, ClearType},
     },
-    std::{
-        io::Write,
-    },
+    std::io::Write,
 };
 
 /// Renders mazes on the set display
@@ -27,7 +33,7 @@ struct Layout {
 
 impl<'s> Renderer<'s> {
     fn is_alternate(&self) -> bool {
-        matches!(self.display, Display::Alternate{..})
+        matches!(self.display, Display::Alternate { .. })
     }
 
     fn layout(&self, maze: &Maze) -> Layout {
@@ -40,7 +46,7 @@ impl<'s> Renderer<'s> {
         let double_sizes;
         // we assume maze.dim.h is fair (it must be)
         match self.display {
-            Display::Alternate(Dim{ w, h}) => {
+            Display::Alternate(Dim { w, h }) => {
                 let available_width = w;
                 let available_height = h - 3;
                 double_sizes = 2 * maze.dim.w < available_width && maze.dim.h < available_height;
@@ -53,7 +59,7 @@ impl<'s> Renderer<'s> {
                         if let Some(player) = maze.player() {
                             if player.x > available_width / 2 {
                                 left_trim = (player.x - available_width / 2)
-                                    .min(maze.dim.w-content_width);
+                                    .min(maze.dim.w - content_width);
                             }
                         }
                     } else {
@@ -64,7 +70,7 @@ impl<'s> Renderer<'s> {
                         if let Some(player) = maze.player() {
                             if player.y > available_height {
                                 top_trim = (player.y - available_height)
-                                    .min(maze.dim.h-2*content_height);
+                                    .min(maze.dim.h - 2 * content_height);
                             }
                         }
                     } else {
@@ -112,7 +118,10 @@ impl<'s> Renderer<'s> {
         if layout.content.w > maze.name.len() + 6 {
             self.spaces(w, layout.content.w - maze.name.len() - 6)?;
         }
-        w.queue(SetColors(Colors{ foreground: Some(self.skin.potion), background: None }))?;
+        w.queue(SetColors(Colors {
+            foreground: Some(self.skin.potion),
+            background: None,
+        }))?;
         w.queue(Print(lives))?;
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
@@ -124,7 +133,10 @@ impl<'s> Renderer<'s> {
         layout: &Layout,
         maze: &Maze,
     ) -> anyhow::Result<()> {
-        w.queue(cursor::MoveTo(0, ( 1 + layout.margin.h + layout.content.h) as u16))?;
+        w.queue(cursor::MoveTo(
+            0,
+            (1 + layout.margin.h + layout.content.h) as u16,
+        ))?;
         self.spaces(w, layout.margin.w)?;
         w.queue(Print(maze.status()))?;
         w.queue(Clear(ClearType::UntilNewLine))?;
@@ -147,7 +159,10 @@ impl<'s> Renderer<'s> {
                 let pos = Pos::new(x, y);
                 let color = self.skin.color(maze.visible_nature(pos));
                 if color.is_some() {
-                    let colors = Colors { foreground: color, background: None };
+                    let colors = Colors {
+                        foreground: color,
+                        background: None,
+                    };
                     w.queue(SetColors(colors))?;
                     w.queue(Print("██"))?;
                     w.queue(ResetColor)?;
@@ -210,11 +225,7 @@ impl<'s> Renderer<'s> {
 
     /// Render the maze (with title and lives count) for the TUI,
     /// assuming a buffered writer in an alternate
-    pub fn write<W: Write>(
-        &self,
-        w: &mut W,
-        maze: &Maze,
-    ) -> anyhow::Result<()> {
+    pub fn write<W: Write>(&self, w: &mut W, maze: &Maze) -> anyhow::Result<()> {
         let layout = self.layout(maze);
         for i in 0..layout.margin.h {
             if self.is_alternate() {
@@ -238,5 +249,4 @@ impl<'s> Renderer<'s> {
         }
         Ok(())
     }
-
 }

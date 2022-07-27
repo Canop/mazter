@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Nature {
     Room,
@@ -8,4 +7,3 @@ pub enum Nature {
     Potion,
     Highlight,
 }
-

@@ -6,4 +6,3 @@ pub enum Display {
     Alternate(Dim),
     Standard,
 }
-

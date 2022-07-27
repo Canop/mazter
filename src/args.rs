@@ -1,9 +1,10 @@
-
-
 #[derive(Debug, clap::Parser)]
-#[clap(author, version, about = "Mazes in your terminal - doc at https://dystroy.org/mazter")]
+#[clap(
+    author,
+    version,
+    about = "Mazes in your terminal - doc at https://dystroy.org/mazter"
+)]
 pub struct Args {
-
     /// don't play, just print a random maze
     #[clap(long, value_parser)]
     pub build: bool,
@@ -20,4 +21,3 @@ pub struct Args {
     #[clap(short, long, value_parser, default_value_t = whoami::username())]
     pub user: String,
 }
-

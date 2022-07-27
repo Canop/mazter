@@ -1,6 +1,4 @@
-use {
-    crate::*,
-};
+use crate::*;
 
 pub struct PosMap<T: Clone + Copy> {
     dim: Dim,
@@ -8,10 +6,14 @@ pub struct PosMap<T: Clone + Copy> {
     default_value: T,
 }
 
-impl<T : Clone + Copy> PosMap<T> {
+impl<T: Clone + Copy> PosMap<T> {
     pub fn new(dim: Dim, default_value: T) -> Self {
-        let values = vec![default_value; dim.w*dim.h].into_boxed_slice();
-        Self { dim, values, default_value }
+        let values = vec![default_value; dim.w * dim.h].into_boxed_slice();
+        Self {
+            dim,
+            values,
+            default_value,
+        }
     }
     pub fn get(&self, p: Pos) -> T {
         self.values[self.dim.idx(p)]
@@ -30,7 +32,7 @@ impl<T : Clone + Copy> PosMap<T> {
     }
 }
 
-impl<T : Clone + Copy + PartialEq> PosMap<T> {
+impl<T: Clone + Copy + PartialEq> PosMap<T> {
     /// Warning: this function is slow
     pub fn is_empty(&self) -> bool {
         !self.is_not_empty()

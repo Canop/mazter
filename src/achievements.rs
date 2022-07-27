@@ -4,7 +4,10 @@ use {
     fnv::FnvHasher,
     std::{
         fs,
-        hash::{Hash, Hasher},
+        hash::{
+            Hash,
+            Hasher,
+        },
         path::PathBuf,
     },
 };
@@ -18,7 +21,7 @@ pub struct Achievement<'s> {
 }
 
 impl<'s> Achievement<'s> {
-    pub fn new(user: &'s str, level:usize) -> Self {
+    pub fn new(user: &'s str, level: usize) -> Self {
         Self { user, level }
     }
     /// get the hash according to FNV
@@ -92,7 +95,12 @@ impl Database {
         self.records.push(ach.into());
     }
     fn write(&self) -> anyhow::Result<()> {
-        fs::create_dir_all(&self.file_path.parent().expect("conf file parent should be defined"))?;
+        fs::create_dir_all(
+            &self
+                .file_path
+                .parent()
+                .expect("conf file parent should be defined"),
+        )?;
         let mut writer = csv::Writer::from_path(&self.file_path)?;
         for record in &self.records {
             writer.serialize(record)?;
@@ -157,7 +165,10 @@ impl Database {
         if db.records.iter().any(|record| record.user == user) {
             if print {
                 println!("Removing achievements of user {user:?}");
-                println!("If you change your mind, you can put the folowwing lines back in {:?}", db.file_path);
+                println!(
+                    "If you change your mind, you can put the folowwing lines back in {:?}",
+                    db.file_path
+                );
             }
             let mut records = Vec::new();
             let mut printer = csv::Writer::from_writer(std::io::stdout());

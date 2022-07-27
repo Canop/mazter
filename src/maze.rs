@@ -1,6 +1,9 @@
 use {
     crate::*,
-    rand::{thread_rng, Rng},
+    rand::{
+        thread_rng,
+        Rng,
+    },
     smallvec::SmallVec,
 };
 
@@ -21,7 +24,7 @@ pub struct Maze {
     cuts: Vec<Pos>,
     highlights: PosSet,
     monsters: Vec<Pos>,
-    turn: usize, // a counter incremented at every end_turn
+    turn: usize,         // a counter incremented at every end_turn
     next_monster: usize, // turn at which a new monster should appear
     pub lives: i32,
     monsters_period: usize,
@@ -46,7 +49,7 @@ impl Maze {
             monsters: Vec::new(),
             highlights: PosSet::new(dim, false),
             turn: 0,
-            next_monster: 50.min((width + height)/3),
+            next_monster: 50.min((width + height) / 3),
             lives: 1,
             monsters_period: width + height,
             potions: PosSet::new(dim, false),
@@ -218,17 +221,15 @@ impl Maze {
     }
     pub fn possible_jumps(&self, p: Pos) -> Vec<Pos> {
         let mut possible_jumps = Vec::new();
-        let r = BLAST_RADIUS.min(self.dim.w/2-3).min(self.dim.h/2-3);
+        let r = BLAST_RADIUS.min(self.dim.w / 2 - 3).min(self.dim.h / 2 - 3);
         let c = Pos::new(
-            p.x.max(r+1).min(self.dim.w-r-1),
-            p.y.max(r+1).min(self.dim.h-r-1),
+            p.x.max(r + 1).min(self.dim.w - r - 1),
+            p.y.max(r + 1).min(self.dim.h - r - 1),
         );
-        for x in c.x-r..=c.x+r {
-            for y in c.y-r..=c.y+r {
+        for x in c.x - r..=c.x + r {
+            for y in c.y - r..=c.y + r {
                 let d = Pos::new(x, y);
-                if self.is_wall(d)
-                    || self.monsters.contains(&d)
-                {
+                if self.is_wall(d) || self.monsters.contains(&d) {
                     continue;
                 }
                 if Pos::manhattan_distance(p, d) >= MIN_JUMP {
@@ -374,7 +375,8 @@ impl Maze {
         }
     }
     pub fn clear_highlight(&mut self) -> bool {
-        if self.highlights.is_empty() { // slow
+        if self.highlights.is_empty() {
+            // slow
             false
         } else {
             self.highlights.clear();
@@ -401,7 +403,8 @@ impl Maze {
     pub fn kill_player(&mut self) {
         self.lives -= 1;
         if let Some(player) = self.player {
-            if self.lives > 0 { // random jump on collision
+            if self.lives > 0 {
+                // random jump on collision
                 let possible_jumps = self.possible_jumps(player);
                 if possible_jumps.is_empty() {
                     self.lives = 0;
@@ -437,7 +440,9 @@ impl Maze {
                 }
                 if let Some(path) = path::find_astar(self, self.monsters[i], player) {
                     let dest = path[0];
-                    if self.monsters.contains(&dest) { continue; }
+                    if self.monsters.contains(&dest) {
+                        continue;
+                    }
                     self.monsters[i] = dest;
                     self.potions.set(dest, false);
                     if dest == player {
@@ -447,8 +452,7 @@ impl Maze {
                 }
             }
             if self.monsters.len() < self.max_monsters && self.turn == self.next_monster {
-                let can_appear = exit != player
-                    && !self.monsters.contains(&exit);
+                let can_appear = exit != player && !self.monsters.contains(&exit);
                 if can_appear {
                     self.monsters.push(exit);
                 } else {
@@ -475,7 +479,7 @@ impl From<Specs> for Maze {
         if specs.disk {
             let d = width.min(height) / 2;
             if d > 10 {
-                maze.squared_radius = Some((d+1)*(d+1));
+                maze.squared_radius = Some((d + 1) * (d + 1));
             }
         }
         maze.lives = specs.lives;
@@ -494,4 +498,3 @@ impl From<Specs> for Maze {
         maze
     }
 }
-

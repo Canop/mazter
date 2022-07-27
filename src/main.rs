@@ -19,26 +19,36 @@ use {
     clap::Parser,
     crossterm::{
         cursor,
-        event::{DisableMouseCapture, EnableMouseCapture},
-        terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+        event::{
+            DisableMouseCapture,
+            EnableMouseCapture,
+        },
+        terminal::{
+            self,
+            EnterAlternateScreen,
+            LeaveAlternateScreen,
+        },
         QueueableCommand,
     },
-    std::io::{self, Write},
+    std::io::{
+        self,
+        Write,
+    },
 };
 
 pub use {
     achievements::*,
     args::*,
     dim::*,
-	display::*,
-	maze::*,
-	nature::*,
-	pos::*,
-	pos_map::*,
-	run::*,
-	renderer::*,
-	skin::*,
-	specs::*,
+    display::*,
+    maze::*,
+    nature::*,
+    pos::*,
+    pos_map::*,
+    renderer::*,
+    run::*,
+    skin::*,
+    specs::*,
 };
 
 /// play the game, runing level after level,
@@ -66,7 +76,9 @@ fn build(args: &Args) -> anyhow::Result<()> {
         if Database::can_play(user, level)? {
             Specs::for_level(level)
         } else {
-            anyhow::bail!("User {user:?} must win the previous levels before printing level {level}")
+            anyhow::bail!(
+                "User {user:?} must win the previous levels before printing level {level}"
+            )
         }
     } else {
         Specs::for_terminal_build()?

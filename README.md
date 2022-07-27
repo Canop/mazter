@@ -17,3 +17,5 @@ A maze in your terminal.
 Go out of the maze, moving with the arrow keys.
 
 [Official site, with precompiled binaries and help](https://dystroy.org/mazter)
+
+If you want to compile mazter yourself, first [install the Rust development environment](https://rustup.rs/) then run `cargo install mazter`.

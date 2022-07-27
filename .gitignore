@@ -3,4 +3,5 @@
 /run.sh
 /release.sh
 /releases
-
+/mazter*.zip
+/build

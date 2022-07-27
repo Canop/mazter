@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF8"/>
+	<title>Mazter</title>
+	<style>
+		body {
+			background: #2e3436;
+			color: #ccc;
+			font-family: monospace;
+		}
+		h1, h2 {
+			color: #ffaf00;
+		}
+		h1, h2, p {
+			text-align: center;
+		}
+		a {
+			color: #00af5f;
+		}
+		.maze {
+			margin: 20px 0;
+		}
+		div.doc {
+			margin: auto;
+			width: 350px;
+			padding-left: 20px;
+		}
+		div.doc p {
+			text-align: left;
+		}
+		code {
+			background: #222;
+		}
+	</style>
+</head>
+<body>
+<h1>Mazter</h1>
+<p>Mazes in your terminal</p>
+<p class=maze>
+	<img src=level-9.png>
+</p>
+<p>
+<a href=download>download</a>
+</p>
+<div class=doc>
+	<p>This is a terminal game, working on Linux, Mac, Windows, etc.</p>
+	<p>Move with the arrow keys to exit the maze.</p>
+	<p>An encounter with a red monster teleports you a short distance, and removes one life.</p>
+	<p>You get lives on green squares.</p>
+	<p>There are already hundreds of levels and I'm working on more.</p>
+	<p>Your achievements are saved, so that next time you'll start at the first level not won.</p>
+	<p>If you're several players on the same account, use <code>mazter --user username</code>.</p>
+	<p>Use <code>mazter --build</code> if you just want to see a random maze.</p>
+	<p>More with  <code>mazter --help</code>.</p>
+	<p>Mazter is now <a href=https://github.com/Canop/mazter>open-source</a>. You may install it as any Rust program from the repository with <code>cargo install .</code>, or without fetching the repository with <code>cargo install mazter</code>.</p>
+	<p>If you like the game, please tell <a href=https://dystroy.org>me</a>. Even more if your kids like it. And tell others.</p>
+</div>
+
+</body>
+</html>

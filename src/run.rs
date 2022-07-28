@@ -41,7 +41,7 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
             // debug!("event: {:?}", e);
             match e {
                 Ok(Event::Key(key_event)) => match key_event {
-                    key!(q) | key!(ctrl - c) | key!(ctrl - q) => {
+                    key!(q) | key!(ctrl-c) | key!(ctrl-q) => {
                         return Ok(());
                     }
                     key!(up) => maze.try_move_up(),

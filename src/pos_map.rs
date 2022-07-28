@@ -1,12 +1,15 @@
 use crate::*;
 
-pub struct PosMap<T: Clone + Copy> {
+/// A mapping between positions in a rect and some
+/// values, with a default value on positions you
+/// didn't explicitly set
+pub struct PosMap<T: Copy> {
     dim: Dim,
     values: Box<[T]>,
     default_value: T,
 }
 
-impl<T: Clone + Copy> PosMap<T> {
+impl<T: Copy> PosMap<T> {
     pub fn new(dim: Dim, default_value: T) -> Self {
         let values = vec![default_value; dim.w * dim.h].into_boxed_slice();
         Self {
@@ -32,13 +35,16 @@ impl<T: Clone + Copy> PosMap<T> {
     }
 }
 
-impl<T: Clone + Copy + PartialEq> PosMap<T> {
+impl<T: Copy + PartialEq> PosMap<T> {
     /// Warning: this function is slow
     pub fn is_empty(&self) -> bool {
         !self.is_not_empty()
     }
     /// tells whether there are not default values
+    ///
     /// Warning: this function is slow
+    /// (it could be optimized with a counter but
+    /// there's no need today in mazter)
     pub fn is_not_empty(&self) -> bool {
         self.values.iter().any(|&v| v != self.default_value)
     }

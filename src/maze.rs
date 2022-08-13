@@ -1,9 +1,6 @@
 use {
     crate::*,
-    rand::{
-        thread_rng,
-        Rng,
-    },
+    rand::{thread_rng, Rng},
     smallvec::SmallVec,
 };
 
@@ -412,6 +409,9 @@ impl Maze {
                     let mut rng = thread_rng();
                     let idx = rng.gen_range(0..possible_jumps.len());
                     self.player = Some(possible_jumps[idx]);
+                    if self.potions.remove(possible_jumps[idx]) {
+                        self.lives += 1;
+                    }
                 }
             }
         } else {

@@ -14,8 +14,58 @@ A maze in your terminal.
 
 ![screenshot](website/level-9.png)
 
-Move with the arrow keys, avoid monsters (or meet them where you want), and go to the exit and the next level.
+Mazter is a maze game and generator, with an adaptative rendering dynamically finding the resolution which best suits your terminal's size.
 
-[Official site, with precompiled binaries and help](https://dystroy.org/mazter)
+## Install
 
-If you want to compile mazter yourself, first [install the Rust development environment](https://rustup.rs/) then run `cargo install mazter`.
+Either
+
+* download the precompiled binaries from the [official site](https://dystroy.org/mazter),
+* or [install the Rust development environment](https://rustup.rs/) then run `cargo install mazter`
+
+## See options
+
+```bash
+mazter --help
+```
+
+## Play
+
+Simply run
+
+```bash
+mazter
+```
+
+As your accomplishments are saved, you'll start at the first level you didn't already win.
+
+But you may replay a previous level with `mazter --level 3`.
+
+If you're several players on the same account, you should specify who's playing:
+
+
+```bash
+mazter --user Gael
+```
+
+Move with the arrow keys to exit the maze.
+
+An encounter with a red monster teleports you a short distance, and removes one life.
+
+You get lives on green squares.
+
+## Just generate a maze
+
+### build a random maze
+
+```bash
+mazter --build
+```
+
+### build a maze for a given level
+
+```bash
+mazter --build --level 20
+```
+
+![screenshot](website/level-46.png)

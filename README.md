@@ -54,6 +54,8 @@ An encounter with a red monster teleports you a short distance, and removes one 
 
 You get lives on green squares.
 
+![screenshot](website/level-46.png)
+
 ## Just generate a maze
 
 ### build a random maze
@@ -67,5 +69,3 @@ mazter --build
 ```bash
 mazter --build --level 20
 ```
-
-![screenshot](website/level-46.png)

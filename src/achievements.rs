@@ -3,6 +3,7 @@ use {
     anyhow::anyhow,
     fnv::FnvHasher,
     std::{
+        cmp::Reverse,
         fs,
         hash::{
             Hash,
@@ -12,6 +13,8 @@ use {
     },
 };
 
+/// Must be changed when the rules change so that all levels are considered
+/// not done
 const SALT: u64 = 20220722;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -35,9 +38,9 @@ impl<'s> Achievement<'s> {
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
-struct Record {
-    user: String,
-    level: usize,
+pub struct Record {
+    pub user: String,
+    pub level: usize,
     hash: u64,
 }
 
@@ -78,8 +81,8 @@ impl Database {
         let mut records = Vec::new();
         if file_path.exists() {
             let mut csv_reader = csv::Reader::from_path(&file_path)?;
-            for res in csv_reader.deserialize() {
-                let record: Record = res?;
+            for res in csv_reader.deserialize::<Record>() {
+                let Ok(record) = res else { continue };
                 if record.is_valid() {
                     records.push(record);
                 } else {
@@ -96,7 +99,7 @@ impl Database {
     }
     fn write(&self) -> anyhow::Result<()> {
         fs::create_dir_all(
-            &self
+            self
                 .file_path
                 .parent()
                 .expect("conf file parent should be defined"),
@@ -189,5 +192,20 @@ impl Database {
             }
         }
         Ok(())
+    }
+    pub fn hof() -> anyhow::Result<Vec<Record>> {
+        let mut db = Self::new()?;
+        let mut hof: Vec<Record> = Vec::new();
+        for record in db.records.drain(..) {
+            if let Some(idx) = hof.iter().position(|hr| hr.user==record.user) {
+                if hof[idx].level < record.level {
+                    hof[idx] = record;
+                }
+            } else {
+                hof.push(record);
+            }
+        }
+        hof.sort_by_key(|r| Reverse(r.level));
+        Ok(hof)
     }
 }

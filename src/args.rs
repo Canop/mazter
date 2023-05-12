@@ -13,6 +13,10 @@ pub struct Args {
     #[clap(long, value_parser)]
     pub reset: bool,
 
+    /// print the Hall of Fame
+    #[clap(long, value_parser)]
+    pub hof: bool,
+
     /// level to play or print - default is the first not won
     #[clap(long, value_parser)]
     pub level: Option<usize>,

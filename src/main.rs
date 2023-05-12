@@ -5,6 +5,7 @@ mod achievements;
 mod args;
 mod dim;
 mod display;
+mod hof;
 mod maze;
 mod nature;
 mod path;
@@ -17,7 +18,7 @@ mod specs;
 
 use {
     clap::Parser,
-    crossterm::{
+    termimad::crossterm::{
         cursor,
         event::{
             DisableMouseCapture,
@@ -97,7 +98,9 @@ fn main() -> anyhow::Result<()> {
     init_cli_log!();
     let args = Args::parse();
     info!("launch args: {:#?}", &args);
-    if args.reset {
+    if args.hof {
+        hof::print()
+    } else if args.reset {
         Database::reset(&args.user, true)
     } else if args.build {
         build(&args)

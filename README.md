@@ -37,6 +37,14 @@ Simply run
 mazter
 ```
 
+Move with the arrow keys to exit the maze.
+
+An encounter with a red monster teleports you a short distance, and removes one life.
+
+You get lives on green squares.
+
+![screenshot](website/level-46.png)
+
 As your accomplishments are saved, you'll start at the first level you didn't already win.
 
 But you may replay a previous level with `mazter --level 3`.
@@ -48,13 +56,9 @@ If you're several players on the same account, you should specify who's playing:
 mazter --user Gael
 ```
 
-Move with the arrow keys to exit the maze.
+You can see the Hall of Fame with `mazter --hof`:
 
-An encounter with a red monster teleports you a short distance, and removes one life.
-
-You get lives on green squares.
-
-![screenshot](website/level-46.png)
+![screenshot](website/hof.png)
 
 ## Just generate a maze
 

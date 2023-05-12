@@ -1,11 +1,11 @@
 use {
     crate::*,
     crokey::key,
-    crossterm::event::{
+    std::io::Write,
+    termimad::crossterm::event::{
         self,
         Event,
     },
-    std::io::Write,
 };
 
 /// Run the game, assuming the terminal is already in alternate mode

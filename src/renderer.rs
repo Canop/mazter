@@ -1,6 +1,6 @@
 use {
     crate::*,
-    crossterm::{
+    termimad::crossterm::{
         cursor,
         style::{
             Colors,

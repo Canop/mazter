@@ -1,6 +1,6 @@
 use {
     crate::Nature,
-    crossterm::style::Color,
+    termimad::crossterm::style::Color,
 };
 
 pub struct Skin {

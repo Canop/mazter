@@ -1,6 +1,6 @@
 use {
     crate::Pos,
-    crossterm::terminal,
+    termimad::crossterm::terminal,
     std::io,
 };
 

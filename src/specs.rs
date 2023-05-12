@@ -98,7 +98,7 @@ impl Specs {
             monsters = 1 + (level / 10).min(2) + (level / 50).min(4);
         }
         let height = (height / 2) * 2;
-        let mut cuts = cuts.unwrap_or_else(|| match level % 7 {
+        let mut cuts = cuts.unwrap_or(match level % 7 {
             4 => (width * height) / 50,
             7 => (width * height) / 120,
             _ => 1 + (width * height) / 150,

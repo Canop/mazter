@@ -40,7 +40,7 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
             let e = event::read();
             // debug!("event: {:?}", e);
             match e {
-                Ok(Event::Key(key_event)) => match key_event {
+                Ok(Event::Key(key_event)) => match key_event.into() {
                     key!(q) | key!(ctrl-c) | key!(ctrl-q) => {
                         return Ok(());
                     }
@@ -68,7 +68,7 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
         let e = event::read();
         debug!("event: {:?}", e);
         match e {
-            Ok(Event::Key(key_event)) => match key_event {
+            Ok(Event::Key(key_event)) => match key_event.into() {
                 key!(ctrl - c) | key!(ctrl - q) => {
                     return Ok(());
                 }

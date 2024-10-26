@@ -429,12 +429,26 @@ impl Maze {
         }
         self.end_player_turn();
     }
+    pub fn move_player_auto(&mut self) {
+        if let (Some(player), Some(exit)) = (self.player, self.exit) {
+            if let Some(path) = path::find_astar(self, player, exit) {
+                let dest = path[0];
+                if !self.monsters.contains(&dest) {
+                    self.player = Some(dest);
+                }
+            } else {
+                // workaround for some invalid mazes I observed
+                self.kill_player();
+            }
+        }
+        self.player_moved();
+    }
     pub fn end_player_turn(&mut self) {
         self.turn += 1;
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
             for i in 0..self.monsters.len() {
                 if Pos::sides(self.monsters[i], player) {
-                    self.monsters[i] = player;
+                    self.monsters[i] = player; // monster takes the player's place
                     self.kill_player();
                     break; // other monsters don't move
                 }

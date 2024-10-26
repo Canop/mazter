@@ -186,10 +186,8 @@ impl Database {
             }
             db.records = records;
             db.write()?;
-        } else {
-            if print {
-                println!("No achievement were found for user {user:?}");
-            }
+        } else if print {
+            println!("No achievement were found for user {user:?}");
         }
         Ok(())
     }

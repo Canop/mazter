@@ -224,7 +224,7 @@ impl Maze {
     }
     pub fn possible_jumps(&self, p: Pos) -> Vec<Pos> {
         let mut possible_jumps = Vec::new();
-        let r = BLAST_RADIUS.min(self.dim.w / 2 - 3).min(self.dim.h / 2 - 3);
+        let r = BLAST_RADIUS.min(self.dim.w / 2 - 3).min(self.dim.h / 2 - 3).max(1);
         let c = Pos::new(
             p.x.max(r + 1).min(self.dim.w - r - 1),
             p.y.max(r + 1).min(self.dim.h - r - 1),
@@ -512,12 +512,26 @@ impl Maze {
         }
         self.end_player_turn();
     }
+    pub fn move_player_auto(&mut self) {
+        if let (Some(player), Some(exit)) = (self.player, self.exit) {
+            if let Some(path) = path::find_astar(self, player, exit) {
+                let dest = path[0];
+                if !self.monsters.contains(&dest) {
+                    self.player = Some(dest);
+                }
+            } else {
+                // workaround for some invalid mazes I observed
+                self.kill_player();
+            }
+        }
+        self.player_moved();
+    }
     pub fn end_player_turn(&mut self) {
         self.turn += 1;
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
             for i in 0..self.monsters.len() {
                 if Pos::sides(self.monsters[i], player) {
-                    self.monsters[i] = player;
+                    self.monsters[i] = player; // monster takes the player's place
                     self.kill_player();
                     break; // other monsters don't move
                 }

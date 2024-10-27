@@ -24,4 +24,8 @@ pub struct Args {
     /// user playing
     #[clap(short, long, value_parser, default_value_t = whoami::username())]
     pub user: String,
+
+    /// let mazter play alone
+    #[clap(long, value_parser)]
+    pub screen_saver: bool,
 }

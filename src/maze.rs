@@ -218,7 +218,7 @@ impl Maze {
     }
     pub fn possible_jumps(&self, p: Pos) -> Vec<Pos> {
         let mut possible_jumps = Vec::new();
-        let r = BLAST_RADIUS.min(self.dim.w / 2 - 3).min(self.dim.h / 2 - 3);
+        let r = BLAST_RADIUS.min(self.dim.w / 2 - 3).min(self.dim.h / 2 - 3).max(1);
         let c = Pos::new(
             p.x.max(r + 1).min(self.dim.w - r - 1),
             p.y.max(r + 1).min(self.dim.h - r - 1),

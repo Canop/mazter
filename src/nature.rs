@@ -2,6 +2,7 @@
 pub enum Nature {
     Room,
     Wall,
+    InvisibleWall,
     Player,
     Monster,
     Potion,

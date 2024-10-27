@@ -31,7 +31,11 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
     let user = if args.screen_saver {
         "screen-saver"
     } else {
-        args.user.as_str()
+        let user = args.user.as_str().trim();
+        if user.is_empty() || user == "screen-saver" {
+            anyhow::bail!("Invalid user name");
+        }
+        user
     };
     let mut level = if let Some(level) = args.level {
         if Database::can_play(user, level)? {

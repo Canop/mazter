@@ -7,9 +7,7 @@ use {
     },
     termimad::{
         crossbeam::channel::select,
-        crossterm::event::{
-            Event,
-        },
+        crossterm::event::Event,
         EventSource,
         EventSourceOptions,
         Ticker,
@@ -30,48 +28,46 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
         display: Display::Alternate(dim),
         skin,
     };
-    let mut ticker = Ticker::new();
-
-
-    let (user, mut level) = if args.screen_saver {
-        // in the future allow to choose the level (if already won by "screen-saver")
-        ("screen-saver", 1)
+    let user = if args.screen_saver {
+        "screen-saver"
     } else {
-        let user = args.user.as_str();
-        let level = if let Some(level) = args.level {
-            if Database::can_play(user, level)? {
-                level
-            } else {
-                anyhow::bail!(
-                    "User {:?} must win the previous levels before trying level {}",
-                    user,
-                    level
-                )
-            }
+        args.user.as_str()
+    };
+    let mut level = if let Some(level) = args.level {
+        if Database::can_play(user, level)? {
+            level
         } else {
-            Database::first_not_won(user)?
-        };
-        (user, level)
+            anyhow::bail!(
+                "User {:?} must win the previous levels before trying level {}",
+                user,
+                level
+            )
+        }
+    } else if args.screen_saver {
+        // by default, the screen saver starts at level 1
+        1
+    } else {
+        // normal users
+        Database::first_not_won(user)?
     };
 
+    let mut ticker = Ticker::new();
     let event_source = EventSource::with_options(EventSourceOptions {
         combine_keys: false,
         ..Default::default()
     })?;
     let user_events = event_source.receiver();
 
-
     loop {
         let specs = Specs::for_level(level);
         debug!("maze specs: {:#?}", &specs);
         let mut maze: Maze = time!(specs.into());
-
         let mut screen_saver_beam = if args.screen_saver {
+            // requesting periodic automatic player moves
             Some(ticker.tick_infinitely(Tick::PlayerMoveAuto, Duration::from_millis(140)))
         } else {
             None
         };
-
         while !(maze.is_won() || maze.is_lost()) {
             renderer.write(w, &maze)?;
             w.flush()?;

@@ -29,7 +29,7 @@ impl Skin {
             Nature::Player => Some(self.player),
             Nature::Potion => Some(self.potion),
             Nature::Highlight => Some(self.highlight),
-            Nature::Room => None,
+            Nature::Room | Nature::InvisibleWall => None,
         }
     }
 }

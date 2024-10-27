@@ -14,6 +14,7 @@ pub struct Maze {
     pub name: String,
     pub dim: Dim,
     rooms: PosSet,
+    invisible_walls: PosSet, // look like rooms, but can't teleport to them
     openings: Vec<Pos>, // used in growth: where it's possible to dig a new cell
     exit: Option<Pos>,
     start: Option<Pos>,
@@ -38,6 +39,7 @@ impl Maze {
             name: name.into(),
             dim: Dim::new(width, height),
             rooms: PosSet::new(dim, false),
+            invisible_walls: PosSet::new(dim, false),
             openings: Vec::new(),
             start: None,
             exit: None,
@@ -93,8 +95,12 @@ impl Maze {
     /// While a cell can contain several "things", one of them is
     /// more visible and determines how it looks
     pub fn visible_nature(&self, p: Pos) -> Nature {
-        if self.is_wall(p) {
-            Nature::Wall
+        if !self.rooms.get(p) {
+            if self.invisible_walls.get(p) {
+                Nature::InvisibleWall
+            } else {
+                Nature::Wall
+            }
         } else if self.monsters.contains(&p) {
             Nature::Monster
         } else if Some(p) == self.player {
@@ -311,6 +317,52 @@ impl Maze {
             added += 1;
         }
     }
+    #[allow(dead_code)]
+    fn neighbours(&self, p: Pos) -> SmallVec<[Pos; 4]> {
+        let mut list = SmallVec::new();
+        if p.y > 0 {
+            list.push(Pos::new(p.x, p.y - 1));
+        }
+        if p.x < self.dim.w - 1 {
+            list.push(Pos::new(p.x + 1, p.y));
+        }
+        if p.y < self.dim.h - 1 {
+            list.push(Pos::new(p.x, p.y + 1));
+        }
+        if p.x > 0 {
+            list.push(Pos::new(p.x - 1, p.y));
+        }
+        list
+    }
+    // neighbour cells, including diagonals
+    fn neighbours_8(&self, p: Pos) -> SmallVec<[Pos; 8]> {
+        let mut list = SmallVec::new();
+        if p.x > 0 && p.y > 0 {
+            list.push(Pos::new(p.x - 1, p.y - 1));
+        }
+        if p.y > 0 {
+            list.push(Pos::new(p.x, p.y - 1));
+        }
+        if p.x < self.dim.w - 1 && p.y > 0 {
+            list.push(Pos::new(p.x + 1, p.y - 1));
+        }
+        if p.x < self.dim.w - 1 {
+            list.push(Pos::new(p.x + 1, p.y));
+        }
+        if p.x < self.dim.w - 1 && p.y < self.dim.h - 1 {
+            list.push(Pos::new(p.x + 1, p.y + 1));
+        }
+        if p.y < self.dim.h - 1 {
+            list.push(Pos::new(p.x, p.y + 1));
+        }
+        if p.x > 0 && p.y < self.dim.h - 1 {
+            list.push(Pos::new(p.x - 1, p.y + 1));
+        }
+        if p.x > 0 {
+            list.push(Pos::new(p.x - 1, p.y));
+        }
+        list
+    }
     // (not counting the border)
     fn inside_neighbours(&self, p: Pos) -> SmallVec<[Pos; 4]> {
         let mut list = SmallVec::new();
@@ -364,6 +416,37 @@ impl Maze {
             }
         }
         max
+    }
+    /// Make some walls invisible, for cosmetic reasons
+    ///
+    /// Warning: don't call this before the maze is fully grown and
+    /// the exit has been set.
+    fn grow_invisible_walls(&mut self) {
+        let mut candidates = Vec::new();
+        let mut seen = PosSet::new(self.dim, false);
+        for x in 0..self.dim.w {
+            for y in 0..self.dim.h {
+                let pos = Pos::new(x, y);
+                if !self.rooms.get(pos) {
+                    candidates.push(pos);
+                    seen.set(pos, true);
+                }
+            }
+        }
+        while let Some(candidate) = candidates.pop() {
+            let mut all_walls = true;
+            for neighbour in self.neighbours_8(candidate) {
+                if self.rooms.get(neighbour) {
+                    all_walls = false;
+                } else if !seen.get(neighbour) {
+                    candidates.push(neighbour);
+                    seen.set(neighbour, true);
+                }
+            }
+            if all_walls {
+                self.invisible_walls.set(candidate, true);
+            }
+        }
     }
     pub fn set_highlights(&mut self, arr: &[Pos]) {
         self.highlights.clear();
@@ -507,6 +590,7 @@ impl From<Specs> for Maze {
         maze.add_potions(specs.potions);
         maze.max_monsters = specs.monsters;
         maze.try_make_exit();
+        maze.grow_invisible_walls();
         maze.default_status = specs.status;
         debug!("squared_radius: {:?}", maze.squared_radius);
         maze

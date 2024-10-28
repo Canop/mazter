@@ -1,5 +1,5 @@
 use {
-    crate::Pos,
+    crate::*,
     std::io,
     termimad::crossterm::terminal,
 };
@@ -33,5 +33,10 @@ impl Dim {
         p: Pos,
     ) -> usize {
         p.x + self.w * p.y
+    }
+    pub fn verticalize(&mut self) {
+        let w = self.h;
+        self.h += self.w;
+        self.w = (w / 2).max(MIN_DIM);
     }
 }

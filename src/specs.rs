@@ -17,6 +17,7 @@ pub struct Specs {
     pub lives: i32,
     pub status: &'static str,
     pub disk: bool,
+    pub fill: bool,
 }
 
 impl Specs {
@@ -28,6 +29,7 @@ impl Specs {
         let potions;
         let monsters;
         let mut cuts = None;
+        let fill = true;
         if level == 1 {
             width = 20;
             height = 15;
@@ -127,6 +129,7 @@ impl Specs {
             lives,
             status,
             disk,
+            fill,
         }
     }
     pub fn for_terminal_build() -> std::io::Result<Self> {
@@ -145,6 +148,7 @@ impl Specs {
             1 => (dim.w * dim.h) / 500,
             _ => (dim.w * dim.h) / 60, // should be only 2
         };
+        let fill = rng.gen_range(0..5) < 4;
         Ok(Self {
             name: "random".to_string(),
             dim,
@@ -154,6 +158,7 @@ impl Specs {
             lives: 0,
             status: "",
             disk: rng.gen_range(0..20) == 0,
+            fill,
         })
     }
 }

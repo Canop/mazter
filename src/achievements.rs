@@ -14,7 +14,8 @@ use {
 };
 
 /// Must be changed when the rules change so that all levels are considered
-/// not done
+/// not done. It's not necessary to change it when specs changed because they're
+/// hashed in the record.
 const SALT: u64 = 20220722;
 
 #[derive(Debug, Clone, Copy, PartialEq)]

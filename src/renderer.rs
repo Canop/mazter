@@ -225,6 +225,11 @@ impl<'s> Renderer<'s> {
     ) -> anyhow::Result<bool> {
         let layout = self.layout(maze);
         if !layout.double_sizes {
+            // we can't animate moves in half size
+            return Ok(false);
+        }
+        if self.skin.room.is_none() {
+            // block character animation is not possible without a room color
             return Ok(false);
         }
         w.queue(ResetColor)?;

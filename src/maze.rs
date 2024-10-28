@@ -236,6 +236,25 @@ impl Maze {
             return true;
         }
     }
+    fn can_place_exit(&self) -> bool {
+        for x in 1..self.dim.w - 1 {
+            if self.is_room(Pos::new(x, 1)) {
+                return true;
+            }
+            if self.is_room(Pos::new(x, self.dim.h - 2)) {
+                return true;
+            }
+        }
+        for y in 1..self.dim.h - 1 {
+            if self.is_room(Pos::new(1, y)) {
+                return true;
+            }
+            if self.is_room(Pos::new(self.dim.w - 2, y)) {
+                return true;
+            }
+        }
+        false
+    }
     // border walls which, when open, make an exit
     fn possible_exits(&self) -> Vec<Pos> {
         let mut possible_exits = Vec::new();
@@ -681,7 +700,20 @@ impl From<Specs> for Maze {
             rng.gen_range(width / 6..width * 5 / 6),
             rng.gen_range(height / 6..height * 5 / 6),
         ));
-        while maze.grow(1) > 0 {}
+        if specs.fill {
+            while maze.grow(10) > 0 {}
+        } else {
+            let n = (width * height) / 3;
+            loop {
+                info!("growing 1");
+                if maze.grow(n) == 0 {
+                    break;
+                }
+                if maze.can_place_exit() {
+                    break;
+                }
+            }
+        }
         maze.add_cuts(specs.cuts);
         maze.add_potions(specs.potions);
         maze.max_monsters = specs.monsters;

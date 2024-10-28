@@ -17,6 +17,7 @@ pub struct Specs {
     pub lives: i32,
     pub status: &'static str,
     pub disk: bool,
+    pub fill: bool,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -28,160 +29,135 @@ enum SizeSpec {
     Huge,
 }
 impl SizeSpec {
-    fn dim(self, level: usize) -> Dim {
+    fn dim(
+        self,
+        level: usize,
+    ) -> Dim {
         match self {
-            Self::Tiny => Dim::new(13 + twist(level, 10), MIN_DIM + 1 + twist(level, 5)),
-            Self::Small => Dim::new(20 + twist(level, level/10), 15 + twist(level, level/12)),
-            Self::Normal => Dim::new(22 + twist(level, level/9), 16 + twist(level, level/11)),
-            Self::Large => Dim::new(24 + twist(level, level/8), 18 + twist(level, level/10)),
-            Self::Huge => Dim::new(30 + twist(level, level/4), 18 + twist(level, level/6)),
+            Self::Tiny => Dim::new(13 + twist(level, 12), MIN_DIM + 1 + twist(level, 7)),
+            Self::Small => Dim::new(20 + twist(level, level / 10), 18 + twist(level, level / 12)),
+            Self::Normal => Dim::new(25 + twist(level, level / 9), 20 + twist(level, level / 11)),
+            Self::Large => Dim::new(30 + twist(level, level / 8), 24 + twist(level, level / 10)),
+            Self::Huge => Dim::new(40 + twist(level, level / 4), 31 + twist(level, level / 6)),
         }
     }
 }
 
 /// Return a pseudo-pseudo-random number, capped and reproductible
 ///  (seed can be eg the level)
-fn twist(seed: usize, max: usize) -> usize {
+fn twist(
+    seed: usize,
+    max: usize,
+) -> usize {
     if max == 0 {
         return 0;
     }
-    (seed * 23 + (max + 173) * 347 + (seed * 293)) % max
+    (seed * 27 + (max + 173) * 347 + (seed * 293)) % max
 }
-
-#[test]
-fn test_thing() {
-    for level in 1..=100 {
-        let dim = Specs::for_level(level).dim;
-        println!("{} -> {:?}", level, dim);
-    }
-    todo!();
-}
-
-// special:
-// - no monster @ l%17 == 1
-// - vertical size @ l%20 == 6
-// - lot of monster and lives @ l%23 == 0
-// - circle @ 1%13 == 5
-// -
 
 impl Specs {
     pub fn for_level(level: usize) -> Self {
-
         let name = format!("Level {level}");
-        let mut dim_spec = match level%11 {
+        let dim_spec = match level % 11 {
             1 | 4 => SizeSpec::Tiny,
             2 | 6 | 8 => SizeSpec::Small,
-            3 | 10 if level > 12 => SizeSpec::Large,
-            7 if level > 20 => SizeSpec::Huge,
+            3 | 10 => SizeSpec::Large,
+            7 => SizeSpec::Huge,
             _ => SizeSpec::Normal,
         };
         let mut dim = dim_spec.dim(level);
-        let disk = dim.w > 10 && dim.h > 10 && level % 5 == 0;
-        if !disk && level % 13 == 7 {
+        let disk = level % 7 == 5;
+        if disk {
+            dim.w = 24.max(dim.w);
+            dim.h = 24.max(dim.h);
+        } else if level % 13 == 7 {
             dim.verticalize();
         }
+        let s = dim.w * dim.h;
+        let fill = !(level % 4 == 1 && level > 6);
 
-        let fill = false; // !(level % 4 == 1 && level > 6);
-
-        let mut lives;
+        let lives;
         let potions;
         let monsters;
-
-        lives = 1;
-        potions = 0;
-        monsters = 0;
-        let cuts = match level % 7 {
-            0 | 5 => (dim.w * dim.h) / 20,
-            2 | 4  => (dim.w * dim.h) / 80,
-            _ => (dim.w * dim.h) / 150,
-        };
-
-        //let mut lives;
-        //let potions;
-        //let monsters;
-        //let mut cuts = None;
-        //if level == 1 {
-        //    width = 20;
-        //    height = 15;
-        //    lives = 1;
-        //    potions = 0;
-        //    monsters = 0;
-        //} else if level == 5 {
-        //    width = 65;
-        //    height = 45;
-        //    lives = 10;
-        //    monsters = 1;
-        //    potions = 0;
-        //} else if level == 15 {
-        //    width = 90;
-        //    height = 60;
-        //    lives = 1;
-        //    monsters = 1;
-        //    potions = 30;
-        //} else if level == 25 {
-        //    width = 100;
-        //    height = 65;
-        //    lives = 1;
-        //    monsters = 1;
-        //    potions = 50;
-        //} else if level == 35 {
-        //    width = 110;
-        //    height = 80;
-        //    lives = 3;
-        //    monsters = 2;
-        //    potions = 50;
-        //} else if level == 45 {
-        //    width = 130;
-        //    height = 90;
-        //    lives = 5;
-        //    monsters = 3;
-        //    potions = 50;
-        //} else if level % 10 == 0 {
-        //    // multiples of 10 are without monster
-        //    width = (29 + level * 5 / 3).min(600);
-        //    height = width * 2 / 3;
-        //    lives = 1;
-        //    potions = 0;
-        //    monsters = 0;
-        //} else if level % 10 == 3 && level > 3 {
-        //    // no potions, but many cuts
-        //    width = (20 + level * 5 / 3).min(600);
-        //    height = width * 2 / 3;
-        //    lives = 1;
-        //    potions = 0;
-        //    monsters = 1 + level / 20;
-        //    cuts = Some((width * height) / 20);
-        //} else if level > 15 && level % 7 == 0 {
-        //    // easy levels, for a change
-        //    width = 10 + level % 13;
-        //    height = width * 2 / 3;
-        //    monsters = 3;
-        //    potions = 5;
-        //    lives = 1;
-        //} else {
-        //    width = (12 + level * 4 / 3).min(400);
-        //    height = (9 + level).min(300);
-        //    lives = if level < 6 || level % 11 == 1 { 3 } else { 1 };
-        //    potions = match level {
-        //        2..=4 => 4 + level,
-        //        5..=20 => 3 + (width * height) / 200,
-        //        _ => (width * height) / 180,
-        //    };
-        //    monsters = 1 + (level / 10).min(2) + (level / 50).min(4);
-        //}
-        //let height = (height / 2) * 2;
-        //    cuts /= 2;
-        //    lives += 3;
-        //    true
-        //} else {
-        //    false
-        //};
+        let cuts;
+        // A cycle of progressively harder levels over 10 turns
+        match level % 10 {
+            1 => {
+                // simple walk
+                lives = 1;
+                monsters = 0;
+                potions = 0;
+                cuts = 1 + s / 200;
+            }
+            2 => {
+                // super easy
+                lives = 5;
+                monsters = 1;
+                potions = 3 + s / (20 + level);
+                cuts = 1 + s / 100;
+            }
+            3 if level > 10 => {
+                //
+                lives = 5;
+                monsters = 2 + level / 80;
+                potions = 3 + s / (100 + level);
+                cuts = 1 + s / 160;
+            }
+            4 if level > 10 => {
+                //
+                lives = 3;
+                monsters = 2;
+                potions = 5 + s / (100 + level);
+                cuts = 1 + s / 200;
+            }
+            5 if level > 20 => {
+                //
+                lives = 3;
+                monsters = 3;
+                potions = 2 + s / (120 + level);
+                cuts = 1 + s / 300;
+            }
+            6 if level > 30 => {
+                //
+                lives = 3;
+                monsters = 4 + (level / 100);
+                potions = 2 + s / 150;
+                cuts = 1 + s / 150;
+            }
+            7 if level > 30 => {
+                //
+                lives = 3;
+                monsters = 3;
+                potions = 2 + s / 100;
+                cuts = 1 + s / 200;
+            }
+            8 if level > 40 => {
+                //
+                lives = 3;
+                monsters = 4;
+                potions = 1 + s / (150 + level);
+                cuts = 1 + s / 200;
+            }
+            9 if level > 50 => {
+                //
+                lives = 3;
+                monsters = 5 + level / 100;
+                potions = 1 + s / (200 + 2 * level);
+                cuts = 1 + s / 100;
+            }
+            _ => {
+                //
+                lives = 3;
+                monsters = 1;
+                potions = 3 + s / (100 + level);
+                cuts = 1 + s / 250;
+            }
+        }
         let status = match level {
             1 => "Use arrow keys to move and exit the maze",
             2 | 4 => "Red monsters teleport you",
             3 => "Pick lives on green squares",
             5 | 7 | 10 => "You can abandon with key 'a'",
-            15 => "Try resize your terminal",
             _ => "",
         };
         Self {
@@ -193,6 +169,7 @@ impl Specs {
             lives,
             status,
             disk,
+            fill,
         }
     }
     pub fn for_terminal_build() -> std::io::Result<Self> {
@@ -211,6 +188,7 @@ impl Specs {
             1 => (dim.w * dim.h) / 500,
             _ => (dim.w * dim.h) / 60, // should be only 2
         };
+        let fill = rng.gen_range(0..5) < 4;
         Ok(Self {
             name: "random".to_string(),
             dim,
@@ -220,6 +198,7 @@ impl Specs {
             lives: 0,
             status: "",
             disk: rng.gen_range(0..20) == 0,
+            fill,
         })
     }
 }

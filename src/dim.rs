@@ -37,6 +37,6 @@ impl Dim {
     pub fn verticalize(&mut self) {
         let w = self.h;
         self.h += self.w;
-        self.w = (w / 2).max(MIN_DIM);
+        self.w = (w / 2).max(MIN_DIM + 1);
     }
 }

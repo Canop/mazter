@@ -3,6 +3,7 @@ extern crate cli_log;
 
 mod achievements;
 mod args;
+mod cell_draw;
 mod dim;
 mod display;
 mod hof;
@@ -11,6 +12,7 @@ mod nature;
 mod path;
 mod pos;
 mod pos_map;
+mod pos_move;
 mod renderer;
 mod run;
 mod skin;
@@ -18,7 +20,12 @@ mod specs;
 
 use {
     clap::Parser,
+    std::io::{
+        self,
+        Write,
+    },
     termimad::crossterm::{
+        QueueableCommand,
         cursor,
         event::{
             DisableMouseCapture,
@@ -29,23 +36,20 @@ use {
             EnterAlternateScreen,
             LeaveAlternateScreen,
         },
-        QueueableCommand,
-    },
-    std::io::{
-        self,
-        Write,
     },
 };
 
 pub use {
     achievements::*,
     args::*,
+    cell_draw::*,
     dim::*,
     display::*,
     maze::*,
     nature::*,
     pos::*,
     pos_map::*,
+    pos_move::*,
     renderer::*,
     run::*,
     skin::*,
@@ -55,7 +59,7 @@ pub use {
 /// play the game, runing level after level,
 /// in an alternate terminal
 fn play(args: &Args) -> anyhow::Result<()> {
-    let skin = Skin::default();
+    let skin = Skin::build();
     let mut w = std::io::BufWriter::new(std::io::stderr());
     w.queue(EnterAlternateScreen)?;
     w.queue(cursor::Hide)?;
@@ -85,7 +89,7 @@ fn build(args: &Args) -> anyhow::Result<()> {
         Specs::for_terminal_build()?
     };
     debug!("specs: {:#?}", &specs);
-    let skin = Skin::default();
+    let skin = Skin::build();
     let maze: Maze = specs.into();
     let renderer = Renderer {
         display: Display::Standard,

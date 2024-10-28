@@ -1,6 +1,12 @@
 use {
     crate::*,
+    std::{
+        io::Write,
+        thread,
+        time::Duration,
+    },
     termimad::crossterm::{
+        QueueableCommand,
         cursor,
         style::{
             Colors,
@@ -12,9 +18,7 @@ use {
             Clear,
             ClearType,
         },
-        QueueableCommand,
     },
-    std::io::Write,
 };
 
 /// Renders mazes on the set display
@@ -36,7 +40,10 @@ impl<'s> Renderer<'s> {
         matches!(self.display, Display::Alternate { .. })
     }
 
-    fn layout(&self, maze: &Maze) -> Layout {
+    fn layout(
+        &self,
+        maze: &Maze,
+    ) -> Layout {
         let content_width;
         let content_height;
         let mut left_trim = 0;
@@ -143,7 +150,97 @@ impl<'s> Renderer<'s> {
         Ok(())
     }
 
-    // the rendering when the maze is very small and we can afford
+    /// Draw one of the step (in [0..8] of the animation) of a moving pos
+    /// when the maze is rendered in double size.
+    ///
+    /// The maze is supposed already rendered, only the moving pos is drawn.
+    /// The pos_move is also supposed taking place in valid positions.
+    ///
+    /// Note: for horizontal moves, we could have 16 positions, not just 8,
+    /// but 8 looks good enough.
+    fn draw_pos_move_step_double_size<W: Write>(
+        &self,
+        w: &mut W,
+        layout: &Layout,
+        pos_move: PosMove,
+        av: usize,
+    ) -> anyhow::Result<()> {
+        // x and y are for the leftest one of the two starting cells
+        let x = (layout.margin.w + 2 * pos_move.start.x) as u16;
+        let y = (layout.margin.h + pos_move.start.y + 1) as u16;
+        let start_bg = self.skin.real_color(pos_move.start_background_nature);
+        let dest_bg = self.skin.real_color(pos_move.dest_background_nature);
+        let fg = self.skin.real_color(pos_move.moving_nature);
+        match pos_move.dir {
+            Dir::Up => {
+                // start pos, leaving
+                draw_bicolor_vertical(w, x, y, fg, start_bg, av)?;
+                draw_bicolor_vertical(w, x + 1, y, fg, start_bg, av)?;
+
+                // dest pos, arriving
+                draw_bicolor_vertical(w, x, y - 1, dest_bg, fg, av)?;
+                draw_bicolor_vertical(w, x + 1, y - 1, dest_bg, fg, av)?;
+            }
+            Dir::Right => {
+                let av_left = (av * 2).min(8); // left cell of each pos
+                let av_right = if av <= 4 { 0 } else { (av - 4) * 2 };
+                draw_bicolor_horizontal(w, x, y, start_bg, fg, av_left)?;
+                draw_bicolor_horizontal(w, x + 1, y, start_bg, fg, av_right)?;
+                draw_bicolor_horizontal(w, x + 2, y, fg, dest_bg, av_left)?;
+                draw_bicolor_horizontal(w, x + 3, y, fg, dest_bg, av_right)?;
+            }
+            Dir::Down => {
+                // start pos, leaving
+                draw_bicolor_vertical(w, x, y, start_bg, fg, 8 - av)?;
+                draw_bicolor_vertical(w, x + 1, y, start_bg, fg, 8 - av)?;
+
+                ////// dest pos, arriving
+                draw_bicolor_vertical(w, x, y + 1, fg, dest_bg, 8 - av)?;
+                draw_bicolor_vertical(w, x + 1, y + 1, fg, dest_bg, 8 - av)?;
+            }
+            Dir::Left => {
+                let av_left = if av <= 4 { 8 } else { 8 - (av - 4) * 2 };
+                let av_right = 8 - (av * 2).min(8); // right cell of each pos
+                draw_bicolor_horizontal(w, x, y, fg, start_bg, av_left)?;
+                draw_bicolor_horizontal(w, x + 1, y, fg, start_bg, av_right)?;
+                draw_bicolor_horizontal(w, x - 2, y, dest_bg, fg, av_left)?;
+                draw_bicolor_horizontal(w, x - 1, y, dest_bg, fg, av_right)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Animate moves. Return true when the animation occured, false
+    /// if it didn't.
+    ///
+    /// When there was no animation, this function is instant and the animation
+    /// may have to be replaced by a wait.
+    ///
+    /// The maze is supposed already rendered, only the moving pos are drawn.
+    pub fn animate_moves<W: Write>(
+        &mut self,
+        w: &mut W,
+        maze: &Maze,
+        pos_moves: &[PosMove],
+    ) -> anyhow::Result<bool> {
+        let layout = self.layout(maze);
+        if !layout.double_sizes {
+            return Ok(false);
+        }
+        w.queue(ResetColor)?;
+        for av in 0..=8 {
+            for pos_move in pos_moves {
+                self.draw_pos_move_step_double_size(w, &layout, *pos_move, av)?;
+            }
+            w.queue(ResetColor)?;
+            w.flush()?;
+            thread::sleep(Duration::from_millis(13));
+        }
+        Ok(true)
+    }
+
+    // the rendering when the maze is very small and we can afford using 2 characters
+    // side by side for each game pos
     fn write_maze_double_size<W: Write>(
         &self,
         w: &mut W,
@@ -198,10 +295,22 @@ impl<'s> Renderer<'s> {
                 let top = self.skin.color(maze.visible_nature(top_pos));
                 let bot = self.skin.color(maze.visible_nature(bot_pos));
                 let (shape, colors) = match (top.is_some(), bot.is_some()) {
-                    (true, true) => ('▀', Colors { foreground: top, background: bot }),
-                    (true, false) => ('▀', Colors { foreground: top, background: None }),
-                    (false, true) => ('▄', Colors { foreground: bot, background: None }),
-                    (false, false) => (' ', Colors { foreground: None, background: None }),
+                    (true, true) => ('▀', Colors {
+                        foreground: top,
+                        background: bot,
+                    }),
+                    (true, false) => ('▀', Colors {
+                        foreground: top,
+                        background: None,
+                    }),
+                    (false, true) => ('▄', Colors {
+                        foreground: bot,
+                        background: None,
+                    }),
+                    (false, false) => (' ', Colors {
+                        foreground: None,
+                        background: None,
+                    }),
                 };
                 w.queue(SetColors(colors))?;
                 w.queue(Print(shape))?;
@@ -216,7 +325,11 @@ impl<'s> Renderer<'s> {
         Ok(())
     }
 
-    fn spaces<W: Write>(&self, w: &mut W, n: usize) -> anyhow::Result<()> {
+    fn spaces<W: Write>(
+        &self,
+        w: &mut W,
+        n: usize,
+    ) -> anyhow::Result<()> {
         for _ in 0..n {
             w.queue(Print(' '))?;
         }
@@ -225,7 +338,11 @@ impl<'s> Renderer<'s> {
 
     /// Render the maze (with title and lives count) for the TUI,
     /// assuming a buffered writer in an alternate
-    pub fn write<W: Write>(&self, w: &mut W, maze: &Maze) -> anyhow::Result<()> {
+    pub fn write<W: Write>(
+        &self,
+        w: &mut W,
+        maze: &Maze,
+    ) -> anyhow::Result<()> {
         let layout = self.layout(maze);
         for i in 0..layout.margin.h {
             if self.is_alternate() {

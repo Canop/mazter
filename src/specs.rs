@@ -1,8 +1,8 @@
 use {
     crate::Dim,
     rand::{
-        thread_rng,
         Rng,
+        thread_rng,
     },
 };
 

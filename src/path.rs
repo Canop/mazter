@@ -6,7 +6,11 @@ use {
 /// Find a short path between start and goal using A*.
 ///
 /// The returned path contains the goal but not the start.
-pub fn find_astar(maze: &Maze, start: Pos, goal: Pos) -> Option<Vec<Pos>> {
+pub fn find_astar(
+    maze: &Maze,
+    start: Pos,
+    goal: Pos,
+) -> Option<Vec<Pos>> {
     let dim = maze.dim;
 
     // nodes already evaluated, we know they're not interesting

@@ -1,8 +1,13 @@
 use {
     crate::*,
     termimad::{
-        minimad::{Alignment, Col, OwningTemplateExpander, TableBuilder},
         MadSkin,
+        minimad::{
+            Alignment,
+            Col,
+            OwningTemplateExpander,
+            TableBuilder,
+        },
     },
 };
 

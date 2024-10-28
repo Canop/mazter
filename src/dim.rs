@@ -1,7 +1,7 @@
 use {
     crate::Pos,
-    termimad::crossterm::terminal,
     std::io,
+    termimad::crossterm::terminal,
 };
 
 /// a couple of usize intended as dimensions
@@ -12,7 +12,10 @@ pub struct Dim {
     pub h: usize,
 }
 impl Dim {
-    pub fn new(w: usize, h: usize) -> Self {
+    pub fn new(
+        w: usize,
+        h: usize,
+    ) -> Self {
         Self { w, h }
     }
     pub fn terminal() -> io::Result<Self> {
@@ -25,7 +28,10 @@ impl Dim {
         }
         Ok(Self::new(width as usize, height as usize))
     }
-    pub fn idx(self, p: Pos) -> usize {
+    pub fn idx(
+        self,
+        p: Pos,
+    ) -> usize {
         p.x + self.w * p.y
     }
 }

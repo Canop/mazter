@@ -1,6 +1,9 @@
 use {
     crate::*,
-    rand::{thread_rng, Rng},
+    rand::{
+        Rng,
+        thread_rng,
+    },
     smallvec::SmallVec,
 };
 
@@ -15,7 +18,7 @@ pub struct Maze {
     pub dim: Dim,
     rooms: PosSet,
     invisible_walls: PosSet, // look like rooms, but can't teleport to them
-    openings: Vec<Pos>, // used in growth: where it's possible to dig a new cell
+    openings: Vec<Pos>,      // used in growth: where it's possible to dig a new cell
     exit: Option<Pos>,
     start: Option<Pos>,
     player: Option<Pos>,
@@ -32,7 +35,10 @@ pub struct Maze {
     squared_radius: Option<usize>,
 }
 impl Maze {
-    pub fn new<S: Into<String>>(name: S, dim: Dim) -> Self {
+    pub fn new<S: Into<String>>(
+        name: S,
+        dim: Dim,
+    ) -> Self {
         let width = dim.w;
         let height = (dim.h / 2) * 2;
         Self {
@@ -60,7 +66,10 @@ impl Maze {
     pub fn start(&self) -> Option<Pos> {
         self.start
     }
-    pub fn set_start(&mut self, player: Pos) {
+    pub fn set_start(
+        &mut self,
+        player: Pos,
+    ) {
         self.start = Some(player);
         self.player = Some(player);
         self.open(player);
@@ -83,10 +92,16 @@ impl Maze {
     pub fn is_lost(&self) -> bool {
         self.lives < 1
     }
-    pub fn is_wall(&self, p: Pos) -> bool {
+    pub fn is_wall(
+        &self,
+        p: Pos,
+    ) -> bool {
         !self.rooms.get(p)
     }
-    pub fn is_room(&self, p: Pos) -> bool {
+    pub fn is_room(
+        &self,
+        p: Pos,
+    ) -> bool {
         self.rooms.get(p)
     }
     pub fn give_up(&mut self) {
@@ -94,7 +109,10 @@ impl Maze {
     }
     /// While a cell can contain several "things", one of them is
     /// more visible and determines how it looks
-    pub fn visible_nature(&self, p: Pos) -> Nature {
+    pub fn visible_nature(
+        &self,
+        p: Pos,
+    ) -> Nature {
         if !self.rooms.get(p) {
             if self.invisible_walls.get(p) {
                 Nature::InvisibleWall
@@ -116,7 +134,10 @@ impl Maze {
     fn center(&self) -> Pos {
         Pos::new(self.dim.w / 2, self.dim.h / 2)
     }
-    fn open(&mut self, p: Pos) {
+    fn open(
+        &mut self,
+        p: Pos,
+    ) {
         self.rooms.set(p, true);
         let neighbours = self.inside_neighbours(p);
         for p in neighbours {
@@ -130,53 +151,67 @@ impl Maze {
             }
         }
     }
-    pub fn try_move_up(&mut self) {
-        if let Some(p) = self.player {
-            if p.y == 0 {
-                return;
+    pub fn pos_in_dir(
+        &self,
+        pos: Pos,
+        dir: Dir,
+    ) -> Option<Pos> {
+        match dir {
+            Dir::Up => {
+                if pos.y == 0 {
+                    None
+                } else {
+                    Some(Pos::new(pos.x, pos.y - 1))
+                }
             }
-            let p = Pos::new(p.x, p.y - 1);
-            if self.is_room(p) {
-                self.player = Some(p);
-                self.player_moved();
+            Dir::Right => {
+                if pos.x == self.dim.w - 1 {
+                    None
+                } else {
+                    Some(Pos::new(pos.x + 1, pos.y))
+                }
+            }
+            Dir::Down => {
+                if pos.y == self.dim.h - 1 {
+                    None
+                } else {
+                    Some(Pos::new(pos.x, pos.y + 1))
+                }
+            }
+            Dir::Left => {
+                if pos.x == 0 {
+                    None
+                } else {
+                    Some(Pos::new(pos.x - 1, pos.y))
+                }
             }
         }
     }
-    pub fn try_move_right(&mut self) {
-        if let Some(p) = self.player {
-            if p.x == self.dim.w - 1 {
-                return;
-            }
-            let p = Pos::new(p.x + 1, p.y);
-            if self.is_room(p) {
-                self.player = Some(p);
-                self.player_moved();
-            }
+    /// Try moving the player in the given direction, adding both this move
+    /// and the monster move to the provided moves vector.
+    pub fn try_move(
+        &mut self,
+        dir: Dir,
+        moves: &mut Vec<PosMove>,
+    ) {
+        let Some(p) = self.player else {
+            return;
+        };
+        let Some(dest) = self.pos_in_dir(p, dir) else {
+            return;
+        };
+        if !self.is_room(dest) {
+            return;
         }
-    }
-    pub fn try_move_down(&mut self) {
-        if let Some(p) = self.player {
-            if p.y == self.dim.h - 1 {
-                return;
-            }
-            let p = Pos::new(p.x, p.y + 1);
-            if self.is_room(p) {
-                self.player = Some(p);
-                self.player_moved();
-            }
-        }
-    }
-    pub fn try_move_left(&mut self) {
-        if let Some(p) = self.player {
-            if p.x == 0 {
-                return;
-            }
-            let p = Pos::new(p.x - 1, p.y);
-            if self.is_room(p) {
-                self.player = Some(p);
-                self.player_moved();
-            }
-        }
+        moves.push(PosMove {
+            start: p,
+            dir,
+            moving_nature: Nature::Player,
+            start_background_nature: Nature::Room,
+            dest_background_nature: self.visible_nature(dest),
+        });
+        self.player = Some(dest);
+        self.player_moved(moves);
     }
     fn seek_open(&mut self) -> bool {
         let mut rng = thread_rng();
@@ -222,9 +257,15 @@ impl Maze {
         }
         possible_exits
     }
-    pub fn possible_jumps(&self, p: Pos) -> Vec<Pos> {
+    pub fn possible_jumps(
+        &self,
+        p: Pos,
+    ) -> Vec<Pos> {
         let mut possible_jumps = Vec::new();
-        let r = BLAST_RADIUS.min(self.dim.w / 2 - 3).min(self.dim.h / 2 - 3).max(1);
+        let r = BLAST_RADIUS
+            .min(self.dim.w / 2 - 3)
+            .min(self.dim.h / 2 - 3)
+            .max(1);
         let c = Pos::new(
             p.x.max(r + 1).min(self.dim.w - r - 1),
             p.y.max(r + 1).min(self.dim.h - r - 1),
@@ -242,7 +283,10 @@ impl Maze {
         }
         possible_jumps
     }
-    fn len_to_player(&self, p: Pos) -> Option<usize> {
+    fn len_to_player(
+        &self,
+        p: Pos,
+    ) -> Option<usize> {
         self.player
             .and_then(|player| path::find_astar(self, player, p))
             .map(|path| path.len())
@@ -292,7 +336,10 @@ impl Maze {
         }
         possible_cuts
     }
-    fn add_cuts(&mut self, n: usize) {
+    fn add_cuts(
+        &mut self,
+        n: usize,
+    ) {
         debug!("adding {n} cuts");
         let mut possible_cuts = self.possible_cuts();
         let mut rng = thread_rng();
@@ -305,7 +352,10 @@ impl Maze {
             added += 1;
         }
     }
-    fn add_potions(&mut self, n: usize) {
+    fn add_potions(
+        &mut self,
+        n: usize,
+    ) {
         debug!("adding {n} potions");
         let mut empty_rooms = self.empty_rooms();
         let mut rng = thread_rng();
@@ -318,7 +368,10 @@ impl Maze {
         }
     }
     #[allow(dead_code)]
-    fn neighbours(&self, p: Pos) -> SmallVec<[Pos; 4]> {
+    fn neighbours(
+        &self,
+        p: Pos,
+    ) -> SmallVec<[Pos; 4]> {
         let mut list = SmallVec::new();
         if p.y > 0 {
             list.push(Pos::new(p.x, p.y - 1));
@@ -335,7 +388,10 @@ impl Maze {
         list
     }
     // neighbour cells, including diagonals
-    fn neighbours_8(&self, p: Pos) -> SmallVec<[Pos; 8]> {
+    fn neighbours_8(
+        &self,
+        p: Pos,
+    ) -> SmallVec<[Pos; 8]> {
         let mut list = SmallVec::new();
         if p.x > 0 && p.y > 0 {
             list.push(Pos::new(p.x - 1, p.y - 1));
@@ -364,7 +420,10 @@ impl Maze {
         list
     }
     // (not counting the border)
-    fn inside_neighbours(&self, p: Pos) -> SmallVec<[Pos; 4]> {
+    fn inside_neighbours(
+        &self,
+        p: Pos,
+    ) -> SmallVec<[Pos; 4]> {
         let mut list = SmallVec::new();
         if p.y > 1 {
             list.push(Pos::new(p.x, p.y - 1));
@@ -380,7 +439,10 @@ impl Maze {
         }
         list
     }
-    pub fn enterable_neighbours(&self, p: Pos) -> SmallVec<[Pos; 4]> {
+    pub fn enterable_neighbours(
+        &self,
+        p: Pos,
+    ) -> SmallVec<[Pos; 4]> {
         let mut list = SmallVec::new();
         if p.y > 0 {
             let e = Pos::new(p.x, p.y - 1);
@@ -408,7 +470,10 @@ impl Maze {
         }
         list
     }
-    fn grow(&mut self, max: usize) -> usize {
+    fn grow(
+        &mut self,
+        max: usize,
+    ) -> usize {
         for n in 0..max {
             let open = self.seek_open();
             if !open {
@@ -448,7 +513,10 @@ impl Maze {
             }
         }
     }
-    pub fn set_highlights(&mut self, arr: &[Pos]) {
+    pub fn set_highlights(
+        &mut self,
+        arr: &[Pos],
+    ) {
         self.highlights.clear();
         for p in arr {
             self.highlights.set(*p, true);
@@ -468,7 +536,10 @@ impl Maze {
             self.highlights.set(start, true);
         }
     }
-    pub fn highlight_path_to_exit(&mut self, from: Option<Pos>) {
+    pub fn highlight_path_to_exit(
+        &mut self,
+        from: Option<Pos>,
+    ) {
         if let (Some(start), Some(exit)) = (from, self.exit) {
             let path = time!(path::find_astar(self, start, exit));
             if let Some(path) = path {
@@ -502,7 +573,10 @@ impl Maze {
         }
         debug!("Remaining lives: {}", self.lives);
     }
-    pub fn player_moved(&mut self) {
+    pub fn player_moved(
+        &mut self,
+        moves: &mut Vec<PosMove>,
+    ) {
         if let Some(player) = self.player {
             if self.monsters.contains(&player) {
                 self.kill_player();
@@ -510,27 +584,42 @@ impl Maze {
                 self.lives += 1;
             }
         }
-        self.end_player_turn();
+        self.end_player_turn(moves);
     }
-    pub fn move_player_auto(&mut self) {
+    pub fn move_player_auto(
+        &mut self,
+        moves: &mut Vec<PosMove>,
+    ) {
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
             if let Some(path) = path::find_astar(self, player, exit) {
                 let dest = path[0];
-                if !self.monsters.contains(&dest) {
-                    self.player = Some(dest);
+                if self.monsters.contains(&dest) {
+                    self.end_player_turn(moves);
+                } else {
+                    self.try_move(player.dir_to(dest), moves);
                 }
             } else {
                 // workaround for some invalid mazes I observed
                 self.kill_player();
             }
         }
-        self.player_moved();
     }
-    pub fn end_player_turn(&mut self) {
+    /// move the world
+    pub fn end_player_turn(
+        &mut self,
+        moves: &mut Vec<PosMove>,
+    ) {
         self.turn += 1;
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
             for i in 0..self.monsters.len() {
-                if Pos::sides(self.monsters[i], player) {
+                if let Some(dir) = self.monsters[i].step_dir_to(player) {
+                    moves.push(PosMove {
+                        start: self.monsters[i],
+                        dir,
+                        moving_nature: Nature::Monster,
+                        start_background_nature: Nature::Room,
+                        dest_background_nature: Nature::Room,
+                    });
                     self.monsters[i] = player; // monster takes the player's place
                     self.kill_player();
                     break; // other monsters don't move
@@ -540,6 +629,13 @@ impl Maze {
                     if self.monsters.contains(&dest) {
                         continue;
                     }
+                    moves.push(PosMove {
+                        start: self.monsters[i],
+                        dir: self.monsters[i].dir_to(dest),
+                        moving_nature: Nature::Monster,
+                        start_background_nature: Nature::Room,
+                        dest_background_nature: self.visible_nature(dest),
+                    });
                     self.monsters[i] = dest;
                     self.potions.set(dest, false);
                     if dest == player {

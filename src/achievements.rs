@@ -24,7 +24,10 @@ pub struct Achievement<'s> {
 }
 
 impl<'s> Achievement<'s> {
-    pub fn new(user: &'s str, level: usize) -> Self {
+    pub fn new(
+        user: &'s str,
+        level: usize,
+    ) -> Self {
         Self { user, level }
     }
     /// get the hash according to FNV
@@ -94,13 +97,15 @@ impl Database {
         }
         Ok(Self { file_path, records })
     }
-    fn add(&mut self, ach: Achievement) {
+    fn add(
+        &mut self,
+        ach: Achievement,
+    ) {
         self.records.push(ach.into());
     }
     fn write(&self) -> anyhow::Result<()> {
         fs::create_dir_all(
-            self
-                .file_path
+            self.file_path
                 .parent()
                 .expect("conf file parent should be defined"),
         )?;
@@ -111,7 +116,10 @@ impl Database {
         writer.flush()?;
         Ok(())
     }
-    fn contains(&self, ach: Achievement) -> bool {
+    fn contains(
+        &self,
+        ach: Achievement,
+    ) -> bool {
         self.records
             .iter()
             .any(|record| record.achievement() == ach)
@@ -147,7 +155,10 @@ impl Database {
             level += 1;
         }
     }
-    pub fn can_play(user: &str, target: usize) -> anyhow::Result<bool> {
+    pub fn can_play(
+        user: &str,
+        target: usize,
+    ) -> anyhow::Result<bool> {
         if target == 0 {
             return Ok(true);
         }
@@ -163,7 +174,10 @@ impl Database {
             level += 1;
         }
     }
-    pub fn reset(user: &str, print: bool) -> anyhow::Result<()> {
+    pub fn reset(
+        user: &str,
+        print: bool,
+    ) -> anyhow::Result<()> {
         let mut db = Self::new()?;
         if db.records.iter().any(|record| record.user == user) {
             if print {
@@ -195,7 +209,7 @@ impl Database {
         let mut db = Self::new()?;
         let mut hof: Vec<Record> = Vec::new();
         for record in db.records.drain(..) {
-            if let Some(idx) = hof.iter().position(|hr| hr.user==record.user) {
+            if let Some(idx) = hof.iter().position(|hr| hr.user == record.user) {
                 if hof[idx].level < record.level {
                     hof[idx] = record;
                 }

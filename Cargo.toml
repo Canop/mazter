@@ -25,6 +25,7 @@ rand = "0.8"
 serde = { version = "1.0.160", features = ["derive"] }
 smallvec = "1.10"
 termimad = "0.31"
+terminal-light = "1.7"
 whoami = "1.2" 
 
 [patch.crates-io]

@@ -6,11 +6,11 @@ use {
         time::Duration,
     },
     termimad::{
-        crossbeam::channel::select,
-        crossterm::event::Event,
         EventSource,
         EventSourceOptions,
         Ticker,
+        crossbeam::channel::select,
+        crossterm::event::Event,
     },
 };
 
@@ -21,7 +21,11 @@ enum Tick {
 }
 
 /// Run the game, assuming the terminal is already in alternate mode
-pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> {
+pub fn run<W: Write>(
+    w: &mut W,
+    skin: &Skin,
+    args: &Args,
+) -> anyhow::Result<()> {
     let dim = Dim::terminal()?;
     debug!("terminal size: {dim:?}");
     let mut renderer = Renderer {
@@ -72,25 +76,21 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
         } else {
             None
         };
+        let mut pending_moves = Vec::new(); // moves not yet animated
         while !(maze.is_won() || maze.is_lost()) {
             renderer.write(w, &maze)?;
             w.flush()?;
             select! {
-                recv(ticker.tick_receiver) -> tick => {
-                    if tick? == Tick::PlayerMoveAuto {
-                        maze.move_player_auto();
-                    }
-                }
                 recv(user_events) -> user_event => {
                     match user_event?.event {
                         Event::Key(key_event) => match key_event.into() {
                             key!(q) | key!(ctrl-c) | key!(ctrl-q) => {
                                 return Ok(());
                             }
-                            key!(up) => maze.try_move_up(),
-                            key!(right) => maze.try_move_right(),
-                            key!(down) => maze.try_move_down(),
-                            key!(left) => maze.try_move_left(),
+                            key!(up) => maze.try_move(Dir::Up, &mut pending_moves),
+                            key!(right) => maze.try_move(Dir::Right, &mut pending_moves),
+                            key!(down) => maze.try_move(Dir::Down, &mut pending_moves),
+                            key!(left) => maze.try_move(Dir::Left, &mut pending_moves),
                             key!(a) => maze.give_up(),
                             _ => {}
                         },
@@ -101,6 +101,15 @@ pub fn run<W: Write>(w: &mut W, skin: &Skin, args: &Args) -> anyhow::Result<()> 
                     }
                     event_source.unblock(false);
                 }
+                recv(ticker.tick_receiver) -> tick => {
+                    if tick? == Tick::PlayerMoveAuto {
+                        maze.move_player_auto(&mut pending_moves);
+                    }
+                }
+            }
+            if !pending_moves.is_empty() {
+                renderer.animate_moves(w, &maze, &pending_moves)?;
+                pending_moves.clear();
             }
         }
         if let Some(beam) = screen_saver_beam.take() {

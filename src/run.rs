@@ -76,7 +76,7 @@ pub fn run<W: Write>(
         } else {
             None
         };
-        let mut pending_moves = Vec::new(); // moves not yet animated
+        let mut events = EventList::default();
         while !(maze.is_won() || maze.is_lost()) {
             renderer.write(w, &maze)?;
             w.flush()?;
@@ -87,10 +87,10 @@ pub fn run<W: Write>(
                             key!(q) | key!(ctrl-c) | key!(ctrl-q) => {
                                 return Ok(());
                             }
-                            key!(up) => maze.try_move(Dir::Up, &mut pending_moves),
-                            key!(right) => maze.try_move(Dir::Right, &mut pending_moves),
-                            key!(down) => maze.try_move(Dir::Down, &mut pending_moves),
-                            key!(left) => maze.try_move(Dir::Left, &mut pending_moves),
+                            key!(up) => maze.try_move(Dir::Up, &mut events),
+                            key!(right) => maze.try_move(Dir::Right, &mut events),
+                            key!(down) => maze.try_move(Dir::Down, &mut events),
+                            key!(left) => maze.try_move(Dir::Left, &mut events),
                             key!(a) => maze.give_up(),
                             _ => {}
                         },
@@ -103,13 +103,13 @@ pub fn run<W: Write>(
                 }
                 recv(ticker.tick_receiver) -> tick => {
                     if tick? == Tick::PlayerMoveAuto {
-                        maze.move_player_auto(&mut pending_moves);
+                        maze.move_player_auto(&mut events);
                     }
                 }
             }
-            if !pending_moves.is_empty() {
-                renderer.animate_moves(w, &maze, pending_moves.clone())?;
-                pending_moves.clear();
+            if !events.is_empty() {
+                renderer.animate_events(w, &maze, &events)?;
+                events.clear();
             }
         }
         if let Some(beam) = screen_saver_beam.take() {

@@ -192,7 +192,7 @@ impl Maze {
     pub fn try_move(
         &mut self,
         dir: Dir,
-        moves: &mut Vec<PosMove>,
+        events: &mut EventList,
     ) {
         let Some(p) = self.player else {
             return;
@@ -203,15 +203,9 @@ impl Maze {
         if !self.is_room(dest) {
             return;
         }
-        moves.push(PosMove {
-            start: p,
-            dir,
-            moving_nature: Nature::Player,
-            start_background_nature: Nature::Room,
-            dest_background_nature: self.visible_nature(dest),
-        });
+        events.add_player_move(p, dir, self.visible_nature(dest));
         self.player = Some(dest);
-        self.player_moved(moves);
+        self.player_moved(events);
     }
     fn seek_open(&mut self) -> bool {
         let mut rng = thread_rng();
@@ -570,7 +564,10 @@ impl Maze {
         }
     }
     // remove a life and teleport the player
-    pub fn kill_player(&mut self) {
+    pub fn kill_player(
+        &mut self,
+        events: &mut EventList,
+    ) {
         self.lives -= 1;
         if let Some(player) = self.player {
             if self.lives > 0 {
@@ -581,8 +578,10 @@ impl Maze {
                 } else {
                     let mut rng = thread_rng();
                     let idx = rng.gen_range(0..possible_jumps.len());
-                    self.player = Some(possible_jumps[idx]);
-                    if self.potions.remove(possible_jumps[idx]) {
+                    let dest = possible_jumps[idx];
+                    events.add_teleport(player, possible_jumps, dest);
+                    self.player = Some(dest);
+                    if self.potions.remove(dest) {
                         self.lives += 1;
                     }
                 }
@@ -594,54 +593,48 @@ impl Maze {
     }
     pub fn player_moved(
         &mut self,
-        moves: &mut Vec<PosMove>,
+        events: &mut EventList,
     ) {
         if let Some(player) = self.player {
             if self.monsters.contains(&player) {
-                self.kill_player();
+                self.kill_player(events);
             } else if self.potions.remove(player) {
                 self.lives += 1;
             }
         }
-        self.end_player_turn(moves);
+        self.end_player_turn(events);
     }
     pub fn move_player_auto(
         &mut self,
-        moves: &mut Vec<PosMove>,
+        events: &mut EventList,
     ) {
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
             if let Some(path) = path::find_astar(self, player, exit) {
                 let dest = path[0];
                 if self.monsters.contains(&dest) {
-                    self.end_player_turn(moves);
+                    self.end_player_turn(events);
                 } else {
-                    self.try_move(player.dir_to(dest), moves);
+                    self.try_move(player.dir_to(dest), events);
                 }
             } else {
                 // workaround for some invalid mazes I observed
-                self.kill_player();
-                self.end_player_turn(moves);
+                self.kill_player(events);
+                self.end_player_turn(events);
             }
         }
     }
     /// move the world
     pub fn end_player_turn(
         &mut self,
-        moves: &mut Vec<PosMove>,
+        events: &mut EventList,
     ) {
         self.turn += 1;
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
             for i in 0..self.monsters.len() {
                 if let Some(dir) = self.monsters[i].step_dir_to(player) {
-                    moves.push(PosMove {
-                        start: self.monsters[i],
-                        dir,
-                        moving_nature: Nature::Monster,
-                        start_background_nature: Nature::Room,
-                        dest_background_nature: Nature::Room,
-                    });
+                    events.add_monster_move(self.monsters[i], dir, Nature::Player);
                     self.monsters[i] = player; // monster takes the player's place
-                    self.kill_player();
+                    self.kill_player(events);
                     break; // other monsters don't move
                 }
                 if let Some(path) = path::find_astar(self, self.monsters[i], player) {
@@ -649,17 +642,15 @@ impl Maze {
                     if self.monsters.contains(&dest) {
                         continue;
                     }
-                    moves.push(PosMove {
-                        start: self.monsters[i],
-                        dir: self.monsters[i].dir_to(dest),
-                        moving_nature: Nature::Monster,
-                        start_background_nature: Nature::Room,
-                        dest_background_nature: self.visible_nature(dest),
-                    });
+                    events.add_monster_move(
+                        self.monsters[i],
+                        self.monsters[i].dir_to(dest),
+                        self.visible_nature(dest),
+                    );
                     self.monsters[i] = dest;
                     self.potions.set(dest, false);
                     if dest == player {
-                        self.kill_player();
+                        self.kill_player(events);
                         break; // other monsters don't move
                     }
                 }
@@ -697,10 +688,21 @@ impl From<Specs> for Maze {
         }
         maze.lives = specs.lives;
         let mut rng = thread_rng();
-        maze.set_start(Pos::new(
-            rng.gen_range(width / 6..width * 5 / 6),
-            rng.gen_range(height / 6..height * 5 / 6),
-        ));
+        loop {
+            let start = Pos::new(
+                rng.gen_range(width / 6..width * 5 / 6),
+                rng.gen_range(height / 6..height * 5 / 6),
+            );
+            if let Some(squared_radius) = maze.squared_radius {
+                if Pos::sq_euclidian_distance(start, maze.center()) + 2 > squared_radius {
+                    // this isn't a valid starting position: we might be unable to grow
+                    // from there
+                    continue;
+                }
+            }
+            maze.set_start(start);
+            break;
+        }
         if specs.fill {
             while maze.grow(10) > 0 {}
         } else {

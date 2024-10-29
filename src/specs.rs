@@ -74,7 +74,7 @@ impl Specs {
             dim.verticalize();
         }
         let s = dim.w * dim.h;
-        let fill = !(level % 4 == 1 && level > 6);
+        let fill = !disk && !(level % 4 == 1 && level > 6);
 
         let lives;
         let potions;
@@ -105,7 +105,7 @@ impl Specs {
             }
             4 if level > 10 => {
                 //
-                lives = 3;
+                lives = 2;
                 monsters = 2;
                 potions = 5 + s / (100 + level);
                 cuts = 1 + s / 200;
@@ -118,21 +118,18 @@ impl Specs {
                 cuts = 1 + s / 100;
             }
             6 if level > 30 => {
-                //
-                lives = 3;
+                lives = 1;
                 monsters = 5 + level / 90;
                 potions = 1 + s / 150;
                 cuts = 1 + s / 150;
             }
             7 if level > 30 => {
-                //
                 lives = 2;
                 monsters = 3 + level / 100;
                 potions = 5 + s / 100;
                 cuts = 1 + s / 200;
             }
             8 if level > 40 => {
-                //
                 lives = 2;
                 monsters = 4;
                 potions = 1 + s / (150 + level);

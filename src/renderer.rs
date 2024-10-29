@@ -13,6 +13,7 @@ use {
             Print,
             ResetColor,
             SetColors,
+            SetForegroundColor,
         },
         terminal::{
             Clear,
@@ -150,6 +151,24 @@ impl<'s> Renderer<'s> {
         Ok(())
     }
 
+    fn draw_teleport_step_double_size<W: Write>(
+        &self,
+        w: &mut W,
+        layout: &Layout,
+        teleport: &Teleport,
+        _av: usize,
+    ) -> anyhow::Result<()> {
+        for pos in &teleport.possible_jumps {
+            // x and y are for the leftest one of the two cells
+            let x = (layout.margin.w + 2 * pos.x) as u16;
+            let y = (layout.margin.h + pos.y + 1) as u16;
+            w.queue(cursor::MoveTo(x, y))?;
+            w.queue(SetForegroundColor(self.skin.real_color(Nature::Monster)))?;
+            w.queue(Print("██"))?;
+        }
+        Ok(())
+    }
+
     /// Draw one of the step (in [0..8] of the animation) of a moving pos
     /// when the maze is rendered in double size.
     ///
@@ -217,11 +236,11 @@ impl<'s> Renderer<'s> {
     /// may have to be replaced by a wait.
     ///
     /// The maze is supposed already rendered, only the moving pos are drawn.
-    pub fn animate_moves<W: Write>(
+    pub fn animate_events<W: Write>(
         &mut self,
         w: &mut W,
         maze: &Maze,
-        mut pos_moves: Vec<PosMove>,
+        events: &EventList,
     ) -> anyhow::Result<bool> {
         let layout = self.layout(maze);
         if !layout.double_sizes {
@@ -233,22 +252,16 @@ impl<'s> Renderer<'s> {
             return Ok(false);
         }
         w.queue(ResetColor)?;
-        // we change the arriving color of moves when it's the leaving color of
-        // previous moves
-        for i in 1..pos_moves.len() {
-            let Some(dest) = pos_moves[i].start.in_dir(pos_moves[i].dir) else {
-                continue; // should not happen
-            };
-            for j in 0..i {
-                if pos_moves[j].start == dest {
-                    pos_moves[i].dest_background_nature = pos_moves[j].moving_nature;
-                    break;
-                }
-            }
-        }
         for av in 0..=8 {
-            for pos_move in &pos_moves {
-                self.draw_pos_move_step_double_size(w, &layout, *pos_move, av)?;
+            for event in &events.events {
+                match event {
+                    Event::Move(pos_move) => {
+                        self.draw_pos_move_step_double_size(w, &layout, *pos_move, av)?;
+                    }
+                    Event::Teleport(teleport) => {
+                        self.draw_teleport_step_double_size(w, &layout, teleport, av)?;
+                    }
+                }
             }
             w.queue(ResetColor)?;
             w.flush()?;

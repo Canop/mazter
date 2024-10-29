@@ -6,13 +6,13 @@ mod args;
 mod cell_draw;
 mod dim;
 mod display;
+mod events;
 mod hof;
 mod maze;
 mod nature;
 mod path;
 mod pos;
 mod pos_map;
-mod pos_move;
 mod renderer;
 mod run;
 mod skin;
@@ -45,11 +45,11 @@ pub use {
     cell_draw::*,
     dim::*,
     display::*,
+    events::*,
     maze::*,
     nature::*,
     pos::*,
     pos_map::*,
-    pos_move::*,
     renderer::*,
     run::*,
     skin::*,

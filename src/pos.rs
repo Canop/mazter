@@ -91,6 +91,18 @@ impl Pos {
             Dir::Up
         }
     }
+    pub fn in_dir(
+        self,
+        dir: Dir,
+    ) -> Option<Pos> {
+        match dir {
+            Dir::Up if self.y > 0 => Some(Pos::new(self.x, self.y - 1)),
+            Dir::Right => Some(Pos::new(self.x + 1, self.y)),
+            Dir::Down => Some(Pos::new(self.x, self.y + 1)),
+            Dir::Left if self.x > 0 => Some(Pos::new(self.x - 1, self.y)),
+            _ => None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

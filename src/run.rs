@@ -108,7 +108,7 @@ pub fn run<W: Write>(
                 }
             }
             if !pending_moves.is_empty() {
-                renderer.animate_moves(w, &maze, &pending_moves)?;
+                renderer.animate_moves(w, &maze, pending_moves.clone())?;
                 pending_moves.clear();
             }
         }

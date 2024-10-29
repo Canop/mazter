@@ -221,7 +221,7 @@ impl<'s> Renderer<'s> {
         &mut self,
         w: &mut W,
         maze: &Maze,
-        pos_moves: &[PosMove],
+        mut pos_moves: Vec<PosMove>,
     ) -> anyhow::Result<bool> {
         let layout = self.layout(maze);
         if !layout.double_sizes {
@@ -233,8 +233,21 @@ impl<'s> Renderer<'s> {
             return Ok(false);
         }
         w.queue(ResetColor)?;
+        // we change the arriving color of moves when it's the leaving color of
+        // previous moves
+        for i in 1..pos_moves.len() {
+            let Some(dest) = pos_moves[i].start.in_dir(pos_moves[i].dir) else {
+                continue; // should not happen
+            };
+            for j in 0..i {
+                if pos_moves[j].start == dest {
+                    pos_moves[i].dest_background_nature = pos_moves[j].moving_nature;
+                    break;
+                }
+            }
+        }
         for av in 0..=8 {
-            for pos_move in pos_moves {
+            for pos_move in &pos_moves {
                 self.draw_pos_move_step_double_size(w, &layout, *pos_move, av)?;
             }
             w.queue(ResetColor)?;

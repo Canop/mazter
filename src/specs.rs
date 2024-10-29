@@ -91,16 +91,16 @@ impl Specs {
             }
             2 => {
                 // super easy
-                lives = 5;
+                lives = 3;
                 monsters = 1;
-                potions = 3 + s / (20 + level);
+                potions = 5 + s / (40 + level);
                 cuts = 1 + s / 100;
             }
             3 if level > 10 => {
                 //
-                lives = 5;
-                monsters = 2 + level / 80;
-                potions = 3 + s / (100 + level);
+                lives = 4;
+                monsters = 2 + level / 60;
+                potions = 2 + s / (100 + level);
                 cuts = 1 + s / 160;
             }
             4 if level > 10 => {
@@ -111,46 +111,46 @@ impl Specs {
                 cuts = 1 + s / 200;
             }
             5 if level > 20 => {
-                //
-                lives = 3;
-                monsters = 3;
-                potions = 2 + s / (120 + level);
-                cuts = 1 + s / 300;
+                // lot of cuts, few potions and lives
+                lives = 1;
+                monsters = 2;
+                potions = 4 + s / (420 + level);
+                cuts = 1 + s / 100;
             }
             6 if level > 30 => {
                 //
                 lives = 3;
-                monsters = 4 + (level / 100);
-                potions = 2 + s / 150;
+                monsters = 5 + level / 90;
+                potions = 1 + s / 150;
                 cuts = 1 + s / 150;
             }
             7 if level > 30 => {
                 //
-                lives = 3;
-                monsters = 3;
-                potions = 2 + s / 100;
+                lives = 2;
+                monsters = 3 + level / 100;
+                potions = 5 + s / 100;
                 cuts = 1 + s / 200;
             }
             8 if level > 40 => {
                 //
-                lives = 3;
+                lives = 2;
                 monsters = 4;
                 potions = 1 + s / (150 + level);
                 cuts = 1 + s / 200;
             }
             9 if level > 50 => {
                 //
-                lives = 3;
+                lives = 2;
                 monsters = 5 + level / 100;
                 potions = 1 + s / (200 + 2 * level);
                 cuts = 1 + s / 100;
             }
             _ => {
                 //
-                lives = 3;
-                monsters = 1;
-                potions = 3 + s / (100 + level);
-                cuts = 1 + s / 250;
+                lives = 1;
+                monsters = 2;
+                potions = 7 + s / (30 + 4 * level);
+                cuts = 1 + s / (60 + 2 * level);
             }
         }
         let status = match level {

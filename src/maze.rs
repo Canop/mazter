@@ -620,6 +620,7 @@ impl Maze {
             } else {
                 // workaround for some invalid mazes I observed
                 self.kill_player();
+                self.end_player_turn(moves);
             }
         }
     }

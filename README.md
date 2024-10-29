@@ -73,3 +73,13 @@ mazter --build
 ```bash
 mazter --build --level 20
 ```
+
+## Just gaze
+
+With the screen-saver mode, mazter plays by himself, even taking a place in the hall of fame.
+
+```bash
+mazter --screen-saver
+```
+
+

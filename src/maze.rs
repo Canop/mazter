@@ -495,6 +495,27 @@ impl Maze {
         }
         max
     }
+    /// Due to cuts added after growing, some rooms may be unreachable
+    /// in case of interrupted growing. This function makes them
+    /// invisble walls to ensure we can't teleport to them.
+    fn change_unreachable_rooms_into_invisible_walls(&mut self) {
+        let Some(exit) = self.exit else {
+            return;
+        };
+        for x in 0..self.dim.w {
+            for y in 0..self.dim.h {
+                let pos = Pos::new(x, y);
+                if !self.rooms.get(pos) {
+                    continue;
+                }
+                let path = path::find_astar(self, pos, exit);
+                if path.is_none() {
+                    self.rooms.set(pos, false);
+                    self.invisible_walls.set(pos, true);
+                }
+            }
+        }
+    }
     /// Make some walls invisible, for cosmetic reasons
     ///
     /// Warning: don't call this before the maze is fully grown and
@@ -722,6 +743,7 @@ impl From<Specs> for Maze {
         maze.max_monsters = specs.monsters;
         maze.try_make_exit();
         maze.grow_invisible_walls();
+        maze.change_unreachable_rooms_into_invisible_walls();
         maze.default_status = specs.status;
         debug!("squared_radius: {:?}", maze.squared_radius);
         maze

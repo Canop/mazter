@@ -41,6 +41,7 @@ pub fn run<W: Write>(
         }
         user
     };
+    let mut levels_won = 0;
     let mut level = if let Some(level) = args.level {
         if Database::can_play(user, level)? {
             level
@@ -116,6 +117,12 @@ pub fn run<W: Write>(
             ticker.stop_beam(beam);
         }
         if maze.is_won() {
+            levels_won += 1;
+            if let Some(levels) = args.levels {
+                if levels_won >= levels {
+                    return Ok(());
+                }
+            }
             let next_not_won_level = Database::advance(Achievement::new(user, level))?;
             level = if args.screen_saver {
                 level + 1

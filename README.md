@@ -12,9 +12,9 @@ A maze in your terminal.
 [s4]: https://miaou.dystroy.org/static/shields/room.svg
 [l4]: https://miaou.dystroy.org/3490?mazter
 
-![screenshot](website/level-9.png)
-
 Mazter is a maze game and generator, with an adaptative rendering dynamically finding the resolution which best suits your terminal's size.
+
+[![asciicast](https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F.svg)](https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F?autoplay=true&loop=true)
 
 ## Install
 
@@ -43,7 +43,7 @@ An encounter with a red monster teleports you a short distance, and removes one 
 
 You get lives on green squares.
 
-![screenshot](website/level-46.png)
+![screenshot](website/level-40-white.png)
 
 As your accomplishments are saved, you'll start at the first level you didn't already win.
 

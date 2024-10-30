@@ -21,6 +21,10 @@ pub struct Args {
     #[clap(long, value_parser)]
     pub level: Option<usize>,
 
+    /// number of levels to play
+    #[clap(long, value_parser)]
+    pub levels: Option<usize>,
+
     /// user playing
     #[clap(short, long, value_parser, default_value_t = whoami::username())]
     pub user: String,

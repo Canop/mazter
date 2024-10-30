@@ -42,7 +42,7 @@ Move with the arrow keys to exit the maze.
 
 An encounter with a red monster teleports you a short distance, and removes one life.
 
-You get lives on green squares.
+You get more lives on green squares.
 
 ![screenshot](website/level-40-white.png)
 
@@ -71,13 +71,13 @@ mazter --build
 
 The maze will always fit your terminal (but not always filling it, you randomly get smaller ones).
 
+![screenshot](website/build.png)
 
 ### build a maze for a given level
 
 ```bash
 mazter --build --level 20
 ```
-![screenshot](website/build.png)
 
 ## Just gaze
 

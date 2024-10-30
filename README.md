@@ -12,9 +12,10 @@ A maze in your terminal.
 [s4]: https://miaou.dystroy.org/static/shields/room.svg
 [l4]: https://miaou.dystroy.org/3490?mazter
 
-Mazter is a maze game and generator, with an adaptative rendering dynamically finding the resolution which best suits your terminal's size.
+Mazter is a maze game and generator, with fluid moves and an adaptative rendering dynamically finding the resolution which best suits your terminal's size.
 
-[![asciicast](https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F.svg)](https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F?autoplay=true&loop=true)
+<a href="https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F?autoplay=true&loop=true" target="_blank"><img src="https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F.svg" /></a>
+
 
 ## Install
 
@@ -68,11 +69,15 @@ You can see the Hall of Fame with `mazter --hof`:
 mazter --build
 ```
 
+The maze will always fit your terminal (but not always filling it, you randomly get smaller ones).
+
+
 ### build a maze for a given level
 
 ```bash
 mazter --build --level 20
 ```
+![screenshot](website/build.png)
 
 ## Just gaze
 

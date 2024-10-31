@@ -92,6 +92,7 @@ pub fn run<W: Write>(
                             key!(right) => maze.try_move(Dir::Right, &mut events),
                             key!(down) => maze.try_move(Dir::Down, &mut events),
                             key!(left) => maze.try_move(Dir::Left, &mut events),
+                            key!(w) => maze.end_player_turn(&mut events),
                             key!(a) => maze.give_up(),
                             _ => {}
                         },

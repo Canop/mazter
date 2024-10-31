@@ -153,8 +153,10 @@ impl Specs {
         let status = match level {
             1 => "Use arrow keys to move and exit the maze",
             2 | 4 => "Red monsters teleport you",
-            3 => "Pick lives on green squares",
-            5 | 7 | 10 => "You can abandon with key 'a'",
+            3 | 6 => "Pick lives on green squares",
+            5 | 8 | 12 => "You can abandon with key 'a'",
+            10 | 14 | 17 => "Hit 'w' to wait",
+            11 => "Sometimes there's no monster, just find the exit",
             _ => "",
         };
         Self {

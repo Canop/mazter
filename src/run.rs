@@ -141,22 +141,30 @@ pub fn run<W: Write>(
             }
             ticker.tick_once(Tick::Continue, Duration::from_secs(2));
         }
-        select! {
-            recv(ticker.tick_receiver) -> _ => {}
-            recv(user_events) -> user_event => {
-                match user_event?.event {
-                    Event::Key(key_event) => match key_event.into() {
-                        key!(ctrl - c) | key!(ctrl - q) => {
-                            return Ok(());
+        loop {
+            select! {
+                recv(ticker.tick_receiver) -> tick => {
+                    if tick? == Tick::Continue {
+                        break;
+                    }
+                }
+                recv(user_events) -> user_event => {
+                    match user_event?.event {
+                        Event::Key(key_event) => match key_event.into() {
+                            key!(ctrl - c) | key!(ctrl - q) => {
+                                return Ok(());
+                            }
+                            _ => {
+                            }
+                        }
+                        Event::Resize(w, h) => {
+                            renderer.display = Display::Alternate(Dim::new(w as usize, h as usize));
                         }
                         _ => {}
                     }
-                    Event::Resize(w, h) => {
-                        renderer.display = Display::Alternate(Dim::new(w as usize, h as usize));
-                    }
-                    _ => {}
+                    event_source.unblock(false);
+                    break;
                 }
-                event_source.unblock(false);
             }
         }
     }

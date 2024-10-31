@@ -8,6 +8,7 @@ mod dim;
 mod display;
 mod events;
 mod hof;
+mod layout;
 mod maze;
 mod nature;
 mod path;
@@ -46,6 +47,7 @@ pub use {
     dim::*,
     display::*,
     events::*,
+    layout::*,
     maze::*,
     nature::*,
     pos::*,
@@ -66,6 +68,7 @@ fn play(args: &Args) -> anyhow::Result<()> {
     w.queue(EnableMouseCapture)?;
     terminal::enable_raw_mode()?;
     let r = run(&mut w, &skin, args);
+    w.flush()?;
     terminal::disable_raw_mode()?;
     w.queue(DisableMouseCapture)?;
     w.queue(cursor::Show)?;

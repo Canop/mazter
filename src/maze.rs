@@ -56,7 +56,7 @@ impl Maze {
             turn: 0,
             next_monster: 50.min((width + height) / 3),
             lives: 1,
-            monsters_period: width + height,
+            monsters_period: width + height - 3,
             potions: PosSet::new(dim, false),
             max_monsters: 10,
             default_status: "",

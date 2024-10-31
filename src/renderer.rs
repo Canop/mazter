@@ -230,6 +230,7 @@ impl<'s> Renderer<'s> {
         }
         w.queue(ResetColor)?;
         // teleports are drawn only once
+        let mut teleport_drawn = false;
         for event in &events.events {
             let Event::Teleport(teleport) = event else {
                 continue;
@@ -239,6 +240,8 @@ impl<'s> Renderer<'s> {
             } else {
                 self.draw_teleport_half_size(w, &layout, maze, teleport)?;
             }
+            teleport_drawn = true;
+            w.queue(ResetColor)?;
             w.flush()?;
         }
         if layout.double_sizes {
@@ -254,10 +257,9 @@ impl<'s> Renderer<'s> {
                 w.flush()?;
                 thread::sleep(Duration::from_millis(8));
             }
-        } else {
-            // in half size, we just wait
-            w.queue(ResetColor)?;
-            w.flush()?;
+        } else if teleport_drawn {
+            // in half size, we just wait a bit after the teleport so that it's
+            // visible
             thread::sleep(Duration::from_millis(120));
         }
         Ok(true)

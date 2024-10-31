@@ -1,5 +1,5 @@
 
-A maze in your terminal.
+Mazes in your terminal.
 
 [![MIT][s2]][l2] [![Latest Version][s1]][l1] [![Chat on Miaou][s4]][l4]
 
@@ -54,7 +54,7 @@ If you're several players on the same account, you should specify who's playing:
 
 
 ```bash
-mazter --user Gael
+mazter --user gael
 ```
 
 You can see the Hall of Fame with `mazter --hof`:
@@ -68,8 +68,6 @@ You can see the Hall of Fame with `mazter --hof`:
 ```bash
 mazter --build
 ```
-
-The maze will always fit your terminal (but not always filling it, you randomly get smaller ones).
 
 ![screenshot](website/build.png)
 

@@ -342,9 +342,18 @@ impl Maze {
                         continue;
                     }
                 }
-                if self.is_wall(p) && Some(p) != self.player {
-                    possible_cuts.push(p);
+                if !self.is_wall(p) || Some(p) == self.player {
+                    continue;
                 }
+                // we check the position isn't surrounded by walls
+                let only_walls = self
+                    .neighbours_8(p)
+                    .iter()
+                    .all(|&n| self.is_wall(n) || self.is_wall(n));
+                if only_walls {
+                    continue;
+                }
+                possible_cuts.push(p);
             }
         }
         possible_cuts

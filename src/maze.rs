@@ -749,12 +749,26 @@ impl From<Specs> for Maze {
         }
         maze.add_cuts(specs.cuts);
         maze.add_potions(specs.potions);
-        maze.max_monsters = specs.monsters;
         maze.try_make_exit();
         maze.grow_invisible_walls();
         maze.change_unreachable_rooms_into_invisible_walls();
         maze.default_status = specs.status;
         debug!("squared_radius: {:?}", maze.squared_radius);
+        maze.max_monsters = specs.monsters;
+        maze.monsters_period = 2 * (width * height) / (width + height);
+        maze.monsters_period -= (maze.max_monsters * 7)
+            .min(maze.monsters_period);
+        maze.monsters_period = maze.monsters_period.max(10);
         maze
     }
+}
+
+#[test]
+fn show() {
+    for i in 1..500 {
+        let specs = Specs::for_level(i);
+        let maze = Maze::from(specs);
+        println!("{i} : {}x{} -> period: {}", maze.dim.w, maze.dim.h, maze.monsters_period);
+    }
+    todo!();
 }

@@ -14,7 +14,8 @@ Mazes in your terminal.
 
 Mazter is a maze game and generator, with fluid moves and an adaptative rendering dynamically finding the resolution which best suits your terminal's size.
 
-<a href="https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F?autoplay=true&loop=true" target="_blank"><img src="https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F.svg" /></a>
+
+[![asciicast](https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F.svg)](https://asciinema.org/a/ZrdfmWiutEkSKuvavVKUDAf9F?autoplay=true&loop=true)
 
 
 ## Install

@@ -639,6 +639,16 @@ impl Maze {
         events: &mut EventList,
     ) {
         if let (Some(player), Some(exit)) = (self.player, self.exit) {
+            // first we look for an adjacent life
+            for dir in [Dir::Up, Dir::Right, Dir::Down, Dir::Left].iter() {
+                if let Some(dest) = self.pos_in_dir(player, *dir) {
+                    if self.potions.get(dest) {
+                        self.try_move(*dir, events);
+                        return;
+                    }
+                }
+            }
+            // then we just go towards the exit
             if let Some(path) = path::find_astar(self, player, exit) {
                 let dest = path[0];
                 if self.monsters.contains(&dest) {
@@ -756,8 +766,7 @@ impl From<Specs> for Maze {
         debug!("squared_radius: {:?}", maze.squared_radius);
         maze.max_monsters = specs.monsters;
         maze.monsters_period = 2 * (width * height) / (width + height);
-        maze.monsters_period -= (maze.max_monsters * 7)
-            .min(maze.monsters_period);
+        maze.monsters_period -= (maze.max_monsters * 7).min(maze.monsters_period);
         maze.monsters_period = maze.monsters_period.max(10);
         maze
     }
@@ -768,7 +777,10 @@ fn show() {
     for i in 1..500 {
         let specs = Specs::for_level(i);
         let maze = Maze::from(specs);
-        println!("{i} : {}x{} -> period: {}", maze.dim.w, maze.dim.h, maze.monsters_period);
+        println!(
+            "{i} : {}x{} -> period: {}",
+            maze.dim.w, maze.dim.h, maze.monsters_period
+        );
     }
     todo!();
 }

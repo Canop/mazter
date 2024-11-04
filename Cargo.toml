@@ -1,6 +1,6 @@
 [package]
 name = "mazter"
-version = "2.1.0"
+version = "2.1.1"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 documentation = "https://dystroy.org/mazter"
 homepage = "https://dystroy.org/mazter"

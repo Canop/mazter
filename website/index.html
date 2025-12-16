@@ -38,6 +38,22 @@
 			max-width: 90vw;
 			max-height: 70vh;
 		}
+		.link-to-dystroy {
+			position: absolute;
+			left: 4px;
+			top: 4px;
+			width: 100px;
+			height: 100px;
+			background: url(https://dystroy.org/dystroy-rust-white.svg) no-repeat;
+			background-position: left center;
+			background-size: 100px 100px;
+			opacity: .6;
+			transition: opacity .5s;
+		}
+		.link-to-dystroy:hover {
+			opacity: 1;
+			transition: opacity .5s;
+		}
 	</style>
 </head>
 <body>
@@ -61,6 +77,6 @@
 	<p>More with  <code>mazter --help</code>.</p>
 	<p>If you like the game, please tell <a href=https://dystroy.org>me</a>. And tell others.</p>
 </div>
-
+<a href=https://dystroy.org class=link-to-dystroy></a>
 </body>
 </html>
